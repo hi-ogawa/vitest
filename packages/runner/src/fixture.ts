@@ -155,7 +155,7 @@ function getUsedProps(fn: Function) {
 
   const first = args[0]
   if (!(first.startsWith('{') && first.endsWith('}')))
-    throw new Error('the first argument must use object destructuring pattern')
+    throw new Error(`the first argument must use object destructuring pattern, but found '${match[1]}'`)
 
   const _first = first.slice(1, -1).replace(/\s/g, '')
   const props = splitByComma(_first).map((prop) => {
@@ -164,7 +164,7 @@ function getUsedProps(fn: Function) {
 
   const last = props.at(-1)
   if (last && last.startsWith('...'))
-    throw new Error('Rest parameters are not supported')
+    throw new Error(`Rest parameters are not supported, but found '${match[1]}'`)
 
   return props
 }
