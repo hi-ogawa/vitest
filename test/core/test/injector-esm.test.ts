@@ -18,6 +18,9 @@ test('default import', async () => {
     "import { __vi_inject__ as __vi_esm_0__ } from 'vue'
     console.log(__vi_esm_0__.default.bar)"
   `)
+
+  // import { deafult as __vi_esm_0__ } from "vue"
+  // console.log(__vi_esm_0__.bar)"
 })
 
 test('named import', async () => {
@@ -78,7 +81,7 @@ test('export named', async () => {
     injectSimpleCode('const a = 1, b = 2; export { a, b as c }'),
   ).toMatchInlineSnapshot(`
     "const __vi_inject__ = { [Symbol.toStringTag]: "Module" };
-    const a = 1, b = 2; 
+    const a = 1, b = 2;
     Object.defineProperty(__vi_inject__, "a", { enumerable: true, configurable: true, get(){ return a }});
     Object.defineProperty(__vi_inject__, "c", { enumerable: true, configurable: true, get(){ return b }});
     export { __vi_inject__ }"
@@ -725,7 +728,7 @@ export function fn1() {
     Object.defineProperty(__vi_inject__, "fn1", { enumerable: true, configurable: true, get(){ return fn1 }});function fn2() {
     }
     Object.defineProperty(__vi_inject__, "fn2", { enumerable: true, configurable: true, get(){ return fn2 }});
-            
+
     export { __vi_inject__ }"
   `)
 })
@@ -949,7 +952,7 @@ test('avoid binding ClassExpression', () => {
   expect(result).toMatchInlineSnapshot(`
     "import { __vi_inject__ as __vi_esm_0__ } from './foo'
 
-     
+
      console.log(__vi_esm_0__.default, __vi_esm_0__.Bar);
      const obj = {
        foo: class Foo {},

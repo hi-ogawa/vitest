@@ -13,14 +13,22 @@ const skipHijack = [
   '/@vite/client',
   '/@vite/env',
   /vite\/dist\/client/,
+  // TODO
+  // use normalizePath(path.resolve(config.cacheDir, 'deps'))
+  // cf. https://github.com/vitejs/vite/blob/3e42611da7812193338ce7cef03db14602332b17/packages/vite/src/node/optimizer/index.ts#L946
+  // /\/node_modules\/\.vite\/deps\//,
+  /\/node_modules\/\.vite\/deps\/\@vitest_cjs-lib\.js/,
 ]
 
 // this is basically copypaste from Vite SSR
 // this method transforms all import and export statements into `__vi_injected__` variable
 // to allow spying on them. this can be disabled by setting `slowHijackESM` to `false`
 export function injectVitestModule(code: string, id: string, parse: PluginContext['parse']) {
-  if (skipHijack.some(skip => id.match(skip)))
-    return
+  // if (skipHijack.some(skip => id.match(skip))) {
+  //   // console.log("@@ skip injectVitestModule", [id, code.slice(0, 100), code.slice(-100)]);
+  //   // sss
+  //   return
+  // }
 
   const s = new MagicString(code)
 
@@ -48,8 +56,13 @@ export function injectVitestModule(code: string, id: string, parse: PluginContex
   const transformImportDeclaration = (node: ImportDeclaration) => {
     const source = node.source.value as string
 
-    if (skipHijack.some(skip => source.match(skip)))
-      return null
+    if (source === "@vitest/cjs-lib") {
+      return null;
+    }
+    // if (skipHijack.some(skip => source.match(skip))) {
+    //   console.log("@@ skip import rewrite", { id });
+    //   return null
+    // }
 
     const importId = `__vi_esm_${uid++}__`
     const hasSpecifiers = node.specifiers.length > 0
@@ -115,6 +128,11 @@ export function injectVitestModule(code: string, id: string, parse: PluginContex
 
   // 2. check all export statements and define exports
   for (const node of ast.body as Node[]) {
+    if (skipHijack.some(skip => id.match(skip))) {
+      console.log("@@ skip export rewrite", { id });
+      break;
+    }
+
     // named exports
     if (node.type === 'ExportNamedDeclaration') {
       if (node.declaration) {
