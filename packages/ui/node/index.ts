@@ -13,17 +13,31 @@ export default (ctx: Vitest): Plugin => {
       const uiOptions = ctx.config
       const base = uiOptions.uiBase
       const coverageFolder = resolveCoverageFolder(ctx)
-      const coveragePath = coverageFolder ? coverageFolder[1] : undefined
-      if (coveragePath && base === coveragePath)
-        throw new Error(`The ui base path and the coverage path cannot be the same: ${base}, change coverage.reportsDirectory`)
+      // refactoring
+      if (coverageFolder) {
+        const [coverageDist, coverageBase] = coverageFolder;
+        if (base === coverageBase)
+          throw new Error(`The ui base path and the coverage path cannot be the same: ${base}, change coverage.reportsDirectory`)
 
-      coverageFolder && server.middlewares.use(coveragePath!, sirv(coverageFolder[0], {
-        single: true,
-        dev: true,
-        setHeaders: (res) => {
-          res.setHeader('Cache-Control', 'public,max-age=0,must-revalidate')
-        },
-      }))
+        server.middlewares.use(coverageBase, sirv(coverageDist, {
+          single: true,
+          dev: true,
+          setHeaders: (res) => {
+            res.setHeader('Cache-Control', 'public,max-age=0,must-revalidate')
+          },
+        }))
+      }
+      // const coveragePath = coverageFolder ? coverageFolder[1] : undefined
+      // if (coveragePath && base === coveragePath)
+      //   throw new Error(`The ui base path and the coverage path cannot be the same: ${base}, change coverage.reportsDirectory`)
+
+      // coverageFolder && server.middlewares.use(coveragePath!, sirv(coverageFolder[0], {
+      //   single: true,
+      //   dev: true,
+      //   setHeaders: (res) => {
+      //     res.setHeader('Cache-Control', 'public,max-age=0,must-revalidate')
+      //   },
+      // }))
       const clientDist = resolve(fileURLToPath(import.meta.url), '../client')
       server.middlewares.use(base, sirv(clientDist, {
         single: true,

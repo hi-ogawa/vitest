@@ -1,0 +1,14 @@
+{
+  "name": "@vitest/test-reporter-html-coverage",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "workspace:*",
+    "@vitest/ui": "workspace:*"
+  }
+}

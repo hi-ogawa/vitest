@@ -8,9 +8,6 @@ export const coverageVisible = ref(false)
 export const disableCoverage = ref(true)
 export const coverage = computed(() => config.value?.coverage)
 export const coverageConfigured = computed(() => {
-  if (!config.value?.api?.port)
-    return false
-
   return coverage.value?.enabled
 })
 export const coverageEnabled = computed(() => {
@@ -19,17 +16,25 @@ export const coverageEnabled = computed(() => {
 })
 export const coverageUrl = computed(() => {
   if (coverageEnabled.value) {
-    const url = `${window.location.protocol}//${window.location.hostname}:${config.value!.api!.port!}`
-    const idx = coverage.value!.reportsDirectory.lastIndexOf('/')
     const htmlReporter = coverage.value!.reporter.find((reporter) => {
       if (reporter[0] !== 'html')
         return undefined
 
       return reporter
     })
-    return htmlReporter && 'subdir' in htmlReporter[1]
-      ? `${url}/${coverage.value!.reportsDirectory.slice(idx + 1)}/${htmlReporter[1].subdir}/index.html`
-      : `${url}/${coverage.value!.reportsDirectory.slice(idx + 1)}/index.html`
+    // TODO: coverage.reportsDirectory is assumed to be under html report directly
+    const coverageReportsDirectory = coverage.value!.reportsDirectory;
+    // TODO: not necessary last?
+    const idx = coverageReportsDirectory.lastIndexOf('/');
+    let url = "/" + coverageReportsDirectory.slice(idx + 1)
+    if (htmlReporter && 'subdir' in htmlReporter[1]) {
+      url + "/" + htmlReporter[1].subdir;
+    }
+    return url += "/index.html";
+    // // const
+    // return htmlReporter && 'subdir' in htmlReporter[1]
+    //   ? `/${coverage.value!.reportsDirectory.slice(idx + 1)}/${htmlReporter[1].subdir}/index.html`
+    //   : `/${coverage.value!.reportsDirectory.slice(idx + 1)}/index.html`
   }
 
   return undefined
