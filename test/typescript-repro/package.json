@@ -1,0 +1,11 @@
+{
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "types": "vitest --typecheck --run"
+  },
+  "dependencies": {
+    "typescript": "^5.2.2",
+    "vitest": "workspace:*"
+  }
+}

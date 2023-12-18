@@ -1904,6 +1904,15 @@ importers:
         specifier: ^1.8.20
         version: 1.8.20(typescript@5.2.2)
 
+  test/typescript-repro:
+    dependencies:
+      typescript:
+        specifier: ^5.2.2
+        version: 5.2.2
+      vitest:
+        specifier: workspace:*
+        version: link:../../packages/vitest
+
   test/ui:
     devDependencies:
       '@playwright/test':
