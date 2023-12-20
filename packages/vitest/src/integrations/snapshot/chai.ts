@@ -113,6 +113,7 @@ export const SnapshotPlugin: ChaiPlugin = (chai, utils) => {
         inlineSnapshot = stripSnapshotIndentation(inlineSnapshot)
       const errorMessage = utils.flag(this, 'message')
 
+      console.log("[toMatchInlineSnapshot]", test.name);
       getSnapshotClient().assert({
         received: expected,
         message,

@@ -53,6 +53,7 @@ export class SnapshotClient {
   constructor(private options: SnapshotClientOptions = {}) {}
 
   async startCurrentRun(filepath: string, name: string, options: SnapshotStateOptions) {
+    console.log("[snapshotClient.startCurrentRun]", name);
     this.filepath = filepath
     this.name = name
 
@@ -169,6 +170,7 @@ export class SnapshotClient {
     if (!this.snapshotState)
       return null
     const result = await this.snapshotState.pack()
+    console.log("[snapshotClient.finishCurrentRun]", result);
 
     this.snapshotState = undefined
     return result
