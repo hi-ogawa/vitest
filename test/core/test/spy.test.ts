@@ -1,4 +1,5 @@
-import { describe, expect, test, vi } from 'vitest'
+import type { Mock } from 'vitest'
+import { describe, expect, expectTypeOf, test, vi } from 'vitest'
 import * as mock from './fixtures/hello-mock'
 
 /**
@@ -29,4 +30,37 @@ describe('spyOn', () => {
 
     expect(hw.hello()).toEqual('hello world')
   })
+})
+
+test('types', () => {
+  // https://jestjs.io/docs/mock-function-api#typescript-usage
+
+  const add = (x: number, y: number) => x + y
+  const calculate = (op: (x: number, y: number) => number, x: number, y: number) => op(x, y)
+
+  // currently requires separate generics for Args and Return
+  type Add = typeof add
+  const mockAdd1 = vi.fn<Parameters<Add>, ReturnType<Add>>()
+
+  mockAdd1.mockImplementation((x, y) => {
+    // arguments types are inferred
+    expectTypeOf(x).toEqualTypeOf<number>()
+    expectTypeOf(y).toEqualTypeOf<number>()
+    return x + y
+  })
+
+  expect(calculate(mockAdd1, 1, 2)).toBe(3)
+  expect(mockAdd1).toHaveBeenCalledTimes(1)
+  expect(mockAdd1).toHaveBeenCalledWith(1, 2)
+
+  const mockAdd2: Mock<Parameters<Add>, ReturnType<Add>> = vi.fn((x, y) => {
+    // arguments types are inferred
+    expectTypeOf(x).toEqualTypeOf<number>()
+    expectTypeOf(y).toEqualTypeOf<number>()
+    return x + y
+  })
+
+  expect(calculate(mockAdd2, 1, 2)).toBe(3)
+  expect(mockAdd2).toHaveBeenCalledTimes(1)
+  expect(mockAdd2).toHaveBeenCalledWith(1, 2)
 })
