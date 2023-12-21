@@ -106,8 +106,8 @@ export async function runCli(command: string, _options?: Options | string, ...ar
   const cli = {
     stdout: '',
     stderr: '',
-    stdoutListeners: [] as (() => void)[],
-    stderrListeners: [] as (() => void)[],
+    stdoutListeners: new Set<() => void>(),
+    stderrListeners: new Set<() => void>(),
     isDone,
     write(text: string) {
       this.resetOutput()
@@ -122,6 +122,7 @@ export async function runCli(command: string, _options?: Options | string, ...ar
 
         const timeout = setTimeout(() => {
           error.message = `Timeout when waiting for output "${expected}".\nReceived:\n${this.stdout} \nStderr:\n${this.stderr}`
+          this.stdoutListeners.delete(listener);
           reject(error)
         }, process.env.CI ? 20_000 : 4_000)
 
@@ -130,11 +131,12 @@ export async function runCli(command: string, _options?: Options | string, ...ar
             if (timeout)
               clearTimeout(timeout)
 
+            this.stdoutListeners.delete(listener);
             resolve()
           }
         }
 
-        this.stdoutListeners.push(listener)
+        this.stdoutListeners.add(listener)
       })
     },
     waitForStderr(expected: string) {
@@ -146,6 +148,7 @@ export async function runCli(command: string, _options?: Options | string, ...ar
 
         const timeout = setTimeout(() => {
           error.message = `Timeout when waiting for error "${expected}".\nReceived:\n${this.stderr}\nStdout:\n${this.stdout}`
+          this.stderrListeners.delete(listener)
           reject(error)
         }, process.env.CI ? 20_000 : 4_000)
 
@@ -154,11 +157,12 @@ export async function runCli(command: string, _options?: Options | string, ...ar
             if (timeout)
               clearTimeout(timeout)
 
+            this.stderrListeners.delete(listener)
             resolve()
           }
         }
 
-        this.stderrListeners.push(listener)
+        this.stderrListeners.add(listener)
       })
     },
     resetOutput() {
