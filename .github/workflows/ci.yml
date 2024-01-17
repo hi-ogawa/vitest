@@ -74,7 +74,7 @@ jobs:
       - uses: browser-actions/setup-chrome@v1
 
       - name: Install
-        run: pnpm i
+        run: pnpm ci
 
       - name: Install Playwright Dependencies
         run: pnpx playwright install --with-deps
