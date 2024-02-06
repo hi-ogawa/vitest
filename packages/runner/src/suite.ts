@@ -61,11 +61,18 @@ function createSuiteCollector(name: string, factory: SuiteFactory = () => { }, m
   const tasks: (Test | Custom | Suite | SuiteCollector)[] = []
   const factoryQueue: (Test | Suite | SuiteCollector)[] = []
 
+  // TODO: stack to get test case position in user code
+  //       cf. SnapshotState._addSnapshot with isInline
+  // TODO: skip default one
+  console.log("[suite]", { name }, new Error("suite"));
+
   let suite: Suite
 
   initSuite()
 
   const task = function (name = '', options: TaskCustomOptions = {}) {
+    console.log("[task]", { name }, new Error("task").stack);
+
     const task: Custom = {
       id: '',
       name,
@@ -218,7 +225,7 @@ function createSuite() {
     if (Array.isArray(cases) && args.length)
       cases = formatTemplateString(cases, args)
 
-    return (name: string | Function, fn: (...args: T[]) => void, options?: number | TestOptions) => {
+    const __VITEST_SUITE_EACH__ = (name: string | Function, fn: (...args: T[]) => void, options?: number | TestOptions) => {
       const _name = formatName(name)
       const arrayOnlyCases = cases.every(Array.isArray)
       cases.forEach((i, idx) => {
@@ -230,6 +237,7 @@ function createSuite() {
 
       this.setContext('each', undefined)
     }
+    return __VITEST_SUITE_EACH__
   }
 
   suiteFn.skipIf = (condition: any) => (condition ? suite.skip : suite) as SuiteAPI
@@ -238,6 +246,7 @@ function createSuite() {
   return createChainable(
     ['concurrent', 'sequential', 'shuffle', 'skip', 'only', 'todo'],
     suiteFn,
+    "__VITEST_SUITE__"
   ) as unknown as SuiteAPI
 }
 
@@ -254,7 +263,7 @@ export function createTaskCollector(
     if (Array.isArray(cases) && args.length)
       cases = formatTemplateString(cases, args)
 
-    return (name: string | Function, fn: (...args: T[]) => void, options?: number | TestOptions) => {
+    const __VITEST_TEST_EACH__ = (name: string | Function, fn: (...args: T[]) => void, options?: number | TestOptions) => {
       const _name = formatName(name)
       const arrayOnlyCases = cases.every(Array.isArray)
       cases.forEach((i, idx) => {
@@ -267,6 +276,7 @@ export function createTaskCollector(
 
       this.setContext('each', undefined)
     }
+    return __VITEST_TEST_EACH__
   }
 
   taskFn.skipIf = function (this: TestAPI, condition: any) {
@@ -287,6 +297,7 @@ export function createTaskCollector(
   const _test = createChainable(
     ['concurrent', 'sequential', 'skip', 'only', 'todo', 'fails'],
     taskFn,
+    "__VITEST_TEST__"
   ) as CustomAPI
 
   if (context)

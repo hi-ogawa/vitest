@@ -9,6 +9,7 @@ export type ChainableFunction<T extends string, Args extends any[], R = any, E =
 export function createChainable<T extends string, Args extends any[], R = any, E = {}>(
   keys: T[],
   fn: (this: Record<T, any>, ...args: Args) => R,
+  fnName?: string,
 ): ChainableFunction<T, Args, R, E> {
   function create(context: Record<T, any>) {
     const chain = function (this: any, ...args: Args) {
@@ -28,6 +29,9 @@ export function createChainable<T extends string, Args extends any[], R = any, E
           return create({ ...context, [key]: true })
         },
       })
+    }
+    if (fnName) {
+      Object.defineProperty(chain, "name", { value: fnName });
     }
     return chain
   }
