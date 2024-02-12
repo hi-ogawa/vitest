@@ -112,26 +112,27 @@ type ExtractEachCallbackArgs<T extends ReadonlyArray<any>> = {
                     ? 10
                     : 'fallback']
 
-interface EachFunctionReturn<Args extends unknown[]> {
-  (
-    name: string | Function,
-    fn: (...args: Args) => Awaitable<void>,
-    options?: number | TestOptions,
-  ): void
-}
-
 interface TestEachFunction {
-  <T extends any[] | [any]>(cases: ReadonlyArray<T>):
-  EachFunctionReturn<T>
-
-  <T extends ReadonlyArray<any>>(cases: ReadonlyArray<T>):
-  EachFunctionReturn<ExtractEachCallbackArgs<T>>
-
-  <T>(cases: ReadonlyArray<T>):
-  EachFunctionReturn<[T]>
-
-  (...args: [TemplateStringsArray, ...any]):
-  EachFunctionReturn<[any]>
+  <T extends any[] | [any]>(cases: ReadonlyArray<T>): (
+    name: string | Function,
+    fn: (...args: T) => Awaitable<void>,
+    options?: number | TestOptions,
+  ) => void
+  <T extends ReadonlyArray<any>>(cases: ReadonlyArray<T>): (
+    name: string | Function,
+    fn: (...args: ExtractEachCallbackArgs<T>) => Awaitable<void>,
+    options?: number | TestOptions,
+  ) => void
+  <T>(cases: ReadonlyArray<T>): (
+    name: string | Function,
+    fn: (...args: T[]) => Awaitable<void>,
+    options?: number | TestOptions,
+  ) => void
+  (...args: [TemplateStringsArray, ...any]): (
+    name: string | Function,
+    fn: (...args: any[]) => Awaitable<void>,
+    options?: number | TestOptions,
+  ) => void
 }
 
 type ChainableTestAPI<ExtraContext = {}> = ChainableFunction<
