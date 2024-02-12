@@ -51,6 +51,18 @@ describe.each([
   })
 })
 
+describe.each([1, 2])('describe options', () => {
+  let result = 0
+
+  test('test', () => {
+    result++
+  })
+
+  afterAll(() => {
+    expect(result).toBe(4)
+  })
+}, { repeats: 3 })
+
 describe.each([
   { a: 1, b: 1, expected: 2 },
   { a: 1, b: 2, expected: 3 },
