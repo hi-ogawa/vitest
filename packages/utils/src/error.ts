@@ -1,3 +1,4 @@
+import type { ErrorWithDiff } from './types'
 import { type DiffOptions, diff } from './diff'
 import { format } from './display'
 import { deepClone, getOwnProperties, getType } from './helpers'
@@ -92,9 +93,9 @@ function normalizeErrorMessage(message: string) {
   return message.replace(/__(vite_ssr_import|vi_import)_\d+__\./g, '')
 }
 
-export function processError(err: any, diffOptions?: DiffOptions) {
+export function processError(err: any, diffOptions?: DiffOptions): ErrorWithDiff {
   if (!err || typeof err !== 'object')
-    return { message: err }
+    return { message: err, name: 'Unknown Error' }
   // stack is not serialized in worker communication
   // we stringify it first
   if (err.stack)

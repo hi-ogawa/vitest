@@ -916,7 +916,7 @@ it('toHaveProperty error diff', () => {
     }
     catch (error) {
       const processed = processError(error)
-      return [processed.message, trim(processed.diff)]
+      return [processed.message, trim(processed.diff!)]
     }
   }
 

@@ -31,8 +31,11 @@ export interface ParsedStack {
   column: number
 }
 
-export interface ErrorWithDiff extends Error {
+// Error instance becomes a plain object when going through RPC
+export interface ErrorWithDiff {
+  message: string
   name: string
+  cause?: unknown
   nameStr?: string
   stack?: string
   stackStr?: string
@@ -45,4 +48,7 @@ export interface ErrorWithDiff extends Error {
   frame?: string
   diff?: string
   codeFrame?: string
+  VITEST_TEST_NAME?: string
+  VITEST_TEST_PATH?: string
+  VITEST_AFTER_ENV_TEARDOWN?: boolean
 }
