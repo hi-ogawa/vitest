@@ -141,7 +141,7 @@ function compareObjects(
   b: Record<string, any>,
   options?: DiffOptions,
 ) {
-  let difference
+  let difference: string | undefined
   let hasThrown = false
 
   try {
