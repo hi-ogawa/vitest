@@ -1,31 +1,49 @@
-import { expect, test } from '@playwright/test'
-import type { PreviewServer } from 'vite'
+import { chromium, expect } from '@playwright/test'
+import type { Page } from '@playwright/test'
+import { beforeAll, describe, test } from 'vitest'
 import { preview } from 'vite'
 import { startVitest } from 'vitest/node'
 
 const port = 9001
 const pageUrl = `http://localhost:${port}/`
 
-test.describe('html report', () => {
-  let previewServer: PreviewServer
+describe('html report', () => {
+  let page: Page
 
-  test.beforeAll(async () => {
+  beforeAll(async () => {
     // generate vitest html report
-    await startVitest('test', [], { run: true, reporters: 'html', coverage: { enabled: true, reportsDirectory: 'html/coverage' } })
+    await startVitest('test', [], {
+      root: './fixtures',
+      run: true,
+      reporters: 'html',
+      coverage: {
+        enabled: true,
+        reportsDirectory: 'html/coverage',
+      },
+    })
 
     // run vite preview server
-    previewServer = await preview({ build: { outDir: 'html' }, preview: { port, strictPort: true } })
-  })
-
-  test.afterAll(async () => {
-    await new Promise<void>((resolve, reject) => {
-      previewServer.httpServer.close((err) => {
-        err ? reject(err) : resolve()
-      })
+    const previewServer = await preview({
+      build: { outDir: 'fixtures/html' },
+      preview: { port, strictPort: true },
     })
+
+    const browser = await chromium.launch({
+      headless: !process.env.PW_HEADED,
+    })
+    page = await browser.newPage()
+
+    return async () => {
+      await browser.close()
+      await new Promise<void>((resolve, reject) => {
+        previewServer.httpServer.close((err) => {
+          err ? reject(err) : resolve()
+        })
+      })
+    }
   })
 
-  test('basic', async ({ page }) => {
+  test('basic', async () => {
     const pageErrors: unknown[] = []
     page.on('pageerror', error => pageErrors.push(error))
 
@@ -59,15 +77,15 @@ test.describe('html report', () => {
     expect(pageErrors).toEqual([])
   })
 
-  test('coverage', async ({ page }) => {
+  test('coverage', async () => {
     await page.goto(pageUrl)
     await page.getByLabel('Show coverage').click()
     await page.frameLocator('#vitest-ui-coverage').getByRole('heading', { name: 'All files' }).click()
   })
 
-  test('error', async ({ page }) => {
+  test('error', async () => {
     await page.goto(pageUrl)
-    await page.getByText('fixtures/error.test.ts').click()
+    await page.getByText('error.test.ts').click()
     await expect(page.getByTestId('diff')).toContainText('- Expected + Received + <style>* {border: 2px solid green};</style>')
   })
 })

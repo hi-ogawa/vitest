@@ -2027,9 +2027,6 @@ importers:
       '@testing-library/dom':
         specifier: ^9.3.3
         version: 9.3.3
-      happy-dom:
-        specifier: latest
-        version: 12.10.3
       vitest:
         specifier: workspace:*
         version: link:../../packages/vitest
