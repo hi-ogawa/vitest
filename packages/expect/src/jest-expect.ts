@@ -161,32 +161,9 @@ export const JestChaiExpect: ChaiPlugin = (chai, utils) => {
   })
   def('toMatchObject', function (expected) {
     const actual = this._obj
-    console.log("@@@@@ 1")
     const pass = jestEquals(actual, expected, [...customTesters, iterableEquality, subsetEquality])
-    console.log("@@@@@ 2", { pass })
     const isNot = utils.flag(this, 'negate') as boolean
     const { subset: actualSubset, stripped } = getObjectSubset(actual, expected)
-    console.log("@@@@@ 3", { stripped, expected, actualSubset })
-    // return this.assert(
-    //   jestEquals(actual, expected, [...customTesters, iterableEquality, subsetEquality]),
-    //   'expected #{this} to match object #{exp}',
-    //   'expected #{this} to not match object #{exp}',
-    //   expected,
-    //   actual,
-    // )
-    // const msg = "foo"
-    const msg = utils.getMessage(
-      this,
-      [
-        pass,
-        'expected #{this} to match object #{exp}',
-        'expected #{this} to not match object #{exp}',
-        expected,
-        actualSubset,
-        false
-      ],
-    )
-    console.log("@@@@@ 4", { msg })
     if ((pass && isNot) || (!pass && !isNot)) {
       const msg = utils.getMessage(
         this,
@@ -196,7 +173,7 @@ export const JestChaiExpect: ChaiPlugin = (chai, utils) => {
           'expected #{this} to not match object #{exp}',
           expected,
           actualSubset,
-          false
+          false,
         ],
       )
       const message = stripped === 0 ? msg : `${msg}\n(${stripped} matching ${stripped === 1 ? 'property' : 'properties'} omitted from actual)`
