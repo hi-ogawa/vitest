@@ -434,6 +434,16 @@ describe('circular equality', () => {
     expect(() => expect(gen()).toMatchObject(gen())).toThrow()
   })
 
+  test('array, set', () => {
+    function gen() {
+      const obj = [new Set<any>(), new Set<any>()]
+      obj[0].add(obj)
+      obj[1].add(obj)
+      return obj
+    }
+    expect(gen()).toMatchObject(gen())
+  })
+
   test('object, array', () => {
     // https://github.com/jestjs/jest/issues/14734
     function gen() {
@@ -450,5 +460,17 @@ describe('circular equality', () => {
     expect(gen()).toEqual(gen())
     // TODO
     expect(() => expect(gen()).toMatchObject(gen())).toThrow()
+  })
+
+  test.only('object, array', () => {
+    // https://github.com/jestjs/jest/issues/14734
+    function gen() {
+      const a: any = {}
+      const b: any = {}
+      a.k1 = b
+      b.k2 = [b]
+      return a
+    }
+    expect(gen()).toMatchObject(gen())
   })
 })
