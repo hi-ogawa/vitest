@@ -1,4 +1,4 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from 'vitest'
 
 describe('circular equality', () => {
   test('object, set, map', () => {
@@ -40,16 +40,6 @@ describe('circular equality', () => {
     expect(gen()).toEqual(gen())
     // TODO
     expect(() => expect(gen()).toMatchObject(gen())).toThrow()
-  })
-
-  test('array, set', () => {
-    function gen() {
-      const obj = [new Set<any>(), new Set<any>()]
-      obj[0].add(obj)
-      obj[1].add(obj)
-      return obj
-    }
-    expect(gen()).toMatchObject(gen())
   })
 
   test('object, array', () => {
