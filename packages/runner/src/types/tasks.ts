@@ -384,11 +384,6 @@ export interface TestOptions {
    */
   concurrent?: boolean
   /**
-   * Whether tests run sequentially.
-   * Tests inherit `sequential` from `describe()` and nested `describe()` will inherit from parent's `sequential`.
-   */
-  sequential?: boolean
-  /**
    * Whether the test should be skipped.
    */
   skip?: boolean

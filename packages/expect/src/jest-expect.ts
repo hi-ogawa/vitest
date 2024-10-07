@@ -309,8 +309,8 @@ export const JestChaiExpect: ChaiPlugin = (chai, utils) => {
       Boolean(obj),
       'expected #{this} to be truthy',
       'expected #{this} to not be truthy',
+      true,
       obj,
-      false,
     )
   })
   def('toBeFalsy', function () {
@@ -319,8 +319,8 @@ export const JestChaiExpect: ChaiPlugin = (chai, utils) => {
       !obj,
       'expected #{this} to be falsy',
       'expected #{this} to not be falsy',
-      obj,
       false,
+      obj,
     )
   })
   def('toBeGreaterThan', function (expected: number | bigint) {
