@@ -325,10 +325,7 @@ function createSuiteCollector(
       meta: options.meta ?? Object.create(null),
     }
     const handler = options.handler
-    if (
-      options.concurrent
-      || (!options.sequential && runner.config.sequence.concurrent)
-    ) {
+    if (options.concurrent || runner.config.sequence.concurrent) {
       task.concurrent = true
     }
     if (shuffle) {
@@ -376,16 +373,14 @@ function createSuiteCollector(
   ) {
     let { options, handler } = parseArguments(optionsOrFn, optionsOrTest)
 
+    // inherit concurrent / sequential from suite
+    const concurrent = this.concurrent || (!this.sequential && (options?.concurrent ?? suiteOptions?.concurrent))
+
     // inherit repeats, retry, timeout from suite
     if (typeof suiteOptions === 'object') {
       options = Object.assign({}, suiteOptions, options)
     }
-
-    // inherit concurrent / sequential from suite
-    options.concurrent
-      = this.concurrent || (!this.sequential && options?.concurrent)
-    options.sequential
-      = this.sequential || (!this.concurrent && options?.sequential)
+    options.concurrent = concurrent
 
     const test = task(formatName(name), {
       ...this,
@@ -520,19 +515,17 @@ function createSuite() {
       optionsOrFactory,
     )
 
-    const isConcurrentSpecified = options.concurrent || this.concurrent || options.sequential === false
-    const isSequentialSpecified = options.sequential || this.sequential || options.concurrent === false
-
     // inherit options from current suite
-    if (currentSuite?.options) {
-      options = { ...currentSuite.options, ...options }
+    options = {
+      ...currentSuite?.options,
+      ...options,
+      concurrent:
+        (this.concurrent
+        ?? options.concurrent
+        ?? currentSuite?.options?.concurrent
+        ?? runner?.config.sequence.concurrent
+        ) && !this.sequential,
     }
-
-    // inherit concurrent / sequential from suite
-    const isConcurrent = isConcurrentSpecified || (options.concurrent && !isSequentialSpecified)
-    const isSequential = isSequentialSpecified || (options.sequential && !isConcurrentSpecified)
-    options.concurrent = isConcurrent && !isSequential
-    options.sequential = isSequential && !isConcurrent
 
     return createSuiteCollector(
       formatName(name),
@@ -743,7 +736,7 @@ function createTest(
   fn: (
     this: Record<
       'concurrent' | 'sequential' | 'skip' | 'only' | 'todo' | 'fails' | 'each',
-      boolean | undefined
+      true | undefined
     > & { fixtures?: FixtureItem[] },
     title: string,
     optionsOrFn?: TestOptions | TestFunction,

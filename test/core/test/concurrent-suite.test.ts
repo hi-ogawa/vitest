@@ -119,10 +119,6 @@ describe('override concurrent', { concurrent: true }, () => {
     checkSequentialTests()
   })
 
-  describe('s-x-2', { sequential: true }, () => {
-    checkSequentialTests()
-  })
-
   describe('s-y', () => {
     checkParallelTests()
   })
