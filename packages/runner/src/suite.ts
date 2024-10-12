@@ -208,7 +208,7 @@ export function getRunner(): VitestRunner {
 function createDefaultSuite(runner: VitestRunner) {
   const config = runner.config.sequence
   const api = config.shuffle ? suite.shuffle : suite
-  return api('', { concurrent: config.concurrent }, () => {})
+  return api('', {}, () => {})
 }
 
 export function clearCollectorContext(
@@ -325,9 +325,7 @@ function createSuiteCollector(
       meta: options.meta ?? Object.create(null),
     }
     const handler = options.handler
-    if (options.concurrent || runner.config.sequence.concurrent) {
-      task.concurrent = true
-    }
+    task.concurrent = options.concurrent
     if (shuffle) {
       task.shuffle = true
     }
@@ -373,14 +371,17 @@ function createSuiteCollector(
   ) {
     let { options, handler } = parseArguments(optionsOrFn, optionsOrTest)
 
-    // inherit concurrent / sequential from suite
-    const concurrent = this.concurrent || (!this.sequential && (options?.concurrent ?? suiteOptions?.concurrent))
-
     // inherit repeats, retry, timeout from suite
-    if (typeof suiteOptions === 'object') {
-      options = Object.assign({}, suiteOptions, options)
+    options = {
+      ...suiteOptions,
+      ...options,
+      concurrent: (
+        this.concurrent
+        ?? options?.concurrent
+        ?? suiteOptions?.concurrent
+        ?? runner?.config.sequence.concurrent
+      ) && !this.sequential,
     }
-    options.concurrent = concurrent
 
     const test = task(formatName(name), {
       ...this,
@@ -519,12 +520,12 @@ function createSuite() {
     options = {
       ...currentSuite?.options,
       ...options,
-      concurrent:
-        (this.concurrent
+      concurrent: (
+        this.concurrent
         ?? options.concurrent
         ?? currentSuite?.options?.concurrent
         ?? runner?.config.sequence.concurrent
-        ) && !this.sequential,
+      ) && !this.sequential,
     }
 
     return createSuiteCollector(
