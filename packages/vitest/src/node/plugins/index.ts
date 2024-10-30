@@ -179,6 +179,8 @@ export async function VitestPlugin(
         ) {
           const watch = config.server!.watch
           if (watch) {
+            // eslint-disable-next-line ts/ban-ts-comment
+            // @ts-ignore removed in chokidar v4 from Vite 6
             watch.useFsEvents = false
             watch.usePolling = false
           }
