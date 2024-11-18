@@ -9,6 +9,7 @@ import { createHotContext, handleMessage, viteNodeHmrPlugin } from './hmr'
 import { ViteNodeServer } from './server'
 import { installSourcemapsSupport } from './source-map'
 import { toArray } from './utils'
+import repl from "node:repl"
 
 const cli = cac('vite-node')
 
@@ -17,6 +18,7 @@ cli
   .option('-c, --config <path>', 'Use specified config file')
   .option('-m, --mode <mode>', 'Set env mode')
   .option('-w, --watch', 'Restart on file changes, similar to "nodemon"')
+  .option('-i, --interactive', 'Enter REPL mode')
   .option('--script', 'Use vite-node as a script runner')
   .option('--options <options>', 'Use specified Vite server options')
   .option('-v, --version', 'Output the version number')
@@ -42,6 +44,7 @@ export interface CliOptions {
   'config'?: string
   'mode'?: string
   'watch'?: boolean
+  'interactive'?: boolean
   'options'?: ViteNodeServerOptionsCLI
   'version'?: boolean
   'help'?: boolean
@@ -83,6 +86,9 @@ async function run(files: string[], options: CliOptions = {}) {
     ? parseServerOptions(options.options)
     : {}
 
+  const EVAL_ENTRY = 'virtual:vite-node-eval.tsx';
+  let evalEntryCode = '';
+
   const server = await createServer({
     logLevel: 'error',
     configFile: options.config,
@@ -92,7 +98,22 @@ async function run(files: string[], options: CliOptions = {}) {
       hmr: !!options.watch,
       watch: options.watch ? undefined : null,
     },
-    plugins: [options.watch && viteNodeHmrPlugin()],
+    plugins: [
+      options.watch && viteNodeHmrPlugin(),
+      options.interactive && {
+        name: 'vite-node:repl-virtual',
+        resolveId(source) {
+          if (source === EVAL_ENTRY) {
+            return '\0' + source;
+          }
+        },
+        load(id) {
+          if (id === '\0' + EVAL_ENTRY) {
+            return evalEntryCode;
+          }
+        },
+      }
+    ],
   })
   await server.pluginContainer.buildStart({})
 
@@ -127,6 +148,38 @@ async function run(files: string[], options: CliOptions = {}) {
 
   for (const file of files) {
     await runner.executeFile(file)
+  }
+
+  if (options.interactive) {
+    async function evaluate(cmd: string) {
+      // TODO: detect language js,jsx,ts,tsx
+      // TODO: transform like node's repl? https://github.com/nodejs/node/blob/746b17e1a5a9d09294b4c993a0319be6e5c39837/lib/repl.js#L432
+      // - top level binding (var, const, let binding)
+      // - return last expression statement
+      const modNode = server.moduleGraph.getModuleById('\0' + EVAL_ENTRY);
+      if (modNode) {
+        server.moduleGraph.invalidateModule(modNode);
+      }
+      runner.moduleCache.deleteByModuleId('\0' + EVAL_ENTRY)
+      evalEntryCode = `export default async function() {{${cmd}}}`
+      const mod = await runner.executeId(EVAL_ENTRY);
+      return mod.default();
+    }
+
+    const replServer = repl.start({
+      eval: async (cmd, _context, _filename, callback) => {
+        try {
+          const result = await evaluate(cmd);
+          callback(null, result);
+        } catch (e) {
+          callback(e as Error, null);
+        }
+      },
+    });
+    replServer.on("close", async () => {
+      await server.close();
+    });
+    return;
   }
 
   if (!options.watch) {
