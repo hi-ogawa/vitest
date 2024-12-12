@@ -19,6 +19,7 @@ interface MockContext {
 
 export class VitestMocker {
   static pendingIds: PendingSuiteMock[] = []
+  static pendingResolve?: Promise<unknown>
   private spyModule?: typeof import('@vitest/spy')
   private primitives: {
     Object: typeof Object
@@ -159,12 +160,14 @@ export class VitestMocker {
   }
 
   public async resolveMocks() {
-    if (!VitestMocker.pendingIds.length) {
+    await VitestMocker.pendingResolve
+    const pendingIds = VitestMocker.pendingIds
+    if (pendingIds.length === 0) {
       return
     }
-
-    await Promise.all(
-      VitestMocker.pendingIds.map(async (mock) => {
+    VitestMocker.pendingIds = []
+    VitestMocker.pendingResolve = Promise.all(
+      pendingIds.map(async (mock) => {
         const { fsPath, external } = await this.resolvePath(
           mock.id,
           mock.importer,
@@ -183,8 +186,7 @@ export class VitestMocker {
         }
       }),
     )
-
-    VitestMocker.pendingIds = []
+    await VitestMocker.pendingResolve
   }
 
   private async callFunctionMock(dep: string, mock: ManualMockedModule) {

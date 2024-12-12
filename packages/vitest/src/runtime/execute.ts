@@ -272,9 +272,7 @@ export class VitestExecutor extends ViteNodeRunner {
   }
 
   async resolveUrl(id: string, importer?: string) {
-    if (VitestMocker.pendingIds.length) {
-      await this.mocker.resolveMocks()
-    }
+    await this.mocker.resolveMocks()
 
     if (importer && importer.startsWith('mock:')) {
       importer = importer.slice(5)
