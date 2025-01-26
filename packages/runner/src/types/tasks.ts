@@ -96,6 +96,7 @@ export interface TaskPopulated extends TaskBase {
    * Store promises (from async expects) to wait for them before finishing the test
    */
   promises?: Promise<any>[]
+  pendingTimeoutErrors?: Set<Error>
 }
 
 /**

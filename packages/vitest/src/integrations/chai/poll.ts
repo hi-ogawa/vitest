@@ -104,6 +104,16 @@ export function createExpectPoll(expect: ExpectStatic): ExpectStatic['poll'] {
             }, timeout)
             check()
           })
+
+          const promise2 = () => {
+            const timeoutError = new Error('Pending "expect.poll"')
+            test.pendingTimeoutErrors ??= new Set();
+            test.pendingTimeoutErrors?.add(timeoutError)
+            return promise().finally(() => {
+              test.pendingTimeoutErrors?.delete(timeoutError)
+            })
+          }
+
           let awaited = false
           test.onFinished ??= []
           test.onFinished.push(() => {
@@ -123,13 +133,13 @@ export function createExpectPoll(expect: ExpectStatic): ExpectStatic['poll'] {
           return {
             then(onFulfilled, onRejected) {
               awaited = true
-              return (resultPromise ||= promise()).then(onFulfilled, onRejected)
+              return (resultPromise ||= promise2()).then(onFulfilled, onRejected)
             },
             catch(onRejected) {
-              return (resultPromise ||= promise()).catch(onRejected)
+              return (resultPromise ||= promise2()).catch(onRejected)
             },
             finally(onFinally) {
-              return (resultPromise ||= promise()).finally(onFinally)
+              return (resultPromise ||= promise2()).finally(onFinally)
             },
             [Symbol.toStringTag]: 'Promise',
           } satisfies Promise<void>

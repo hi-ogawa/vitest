@@ -344,6 +344,8 @@ function createSuiteCollector(
         withTimeout(
           withAwaitAsyncAssertions(withFixtures(handler, context), task),
           options?.timeout ?? runner.config.testTimeout,
+          false,
+          task,
         ),
       )
     }

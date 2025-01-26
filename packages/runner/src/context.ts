@@ -3,6 +3,7 @@ import type { VitestRunner } from './types/runner'
 import type {
   RuntimeContext,
   SuiteCollector,
+  TaskPopulated,
   Test,
   TestContext,
 } from './types/tasks'
@@ -34,6 +35,7 @@ export function withTimeout<T extends (...args: any[]) => any>(
   fn: T,
   timeout: number,
   isHook = false,
+  task?: TaskPopulated,
 ): T {
   if (timeout <= 0 || timeout === Number.POSITIVE_INFINITY) {
     return fn
@@ -47,7 +49,7 @@ export function withTimeout<T extends (...args: any[]) => any>(
     return new Promise((resolve_, reject_) => {
       const timer = setTimeout(() => {
         clearTimeout(timer)
-        reject(new Error(makeTimeoutMsg(isHook, timeout)))
+        rejectByTimeout()
       }, timeout)
       // `unref` might not exist in browser
       timer.unref?.()
@@ -58,10 +60,20 @@ export function withTimeout<T extends (...args: any[]) => any>(
         // but we still need to fail the test, see
         // https://github.com/vitest-dev/vitest/issues/2920
         if (now() - startTime >= timeout) {
-          reject_(new Error(makeTimeoutMsg(isHook, timeout)))
+          rejectByTimeout()
           return
         }
         resolve_(result)
+      }
+
+      function rejectByTimeout() {
+        const timeoutError = new Error(makeTimeoutMsg(isHook, timeout));
+        if (task?.pendingTimeoutErrors?.size) {
+          // present pending expect.poll, etc...
+          reject_([timeoutError, ...task.pendingTimeoutErrors])
+        } else {
+          reject_(timeoutError)
+        }
       }
 
       function reject(error: unknown) {
