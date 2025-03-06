@@ -1,6 +1,6 @@
-type CloneOption = 'native' | 'ponyfill' | 'none';
+type CloneOption = "native" | "ponyfill" | "none";
 interface DefineWorkerOptions {
-    clone: CloneOption;
+	clone: CloneOption;
 }
 
 declare function defineWebWorkers(options?: DefineWorkerOptions): void;

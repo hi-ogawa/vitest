@@ -43,4 +43,4 @@ const globalApis = [
   "onTestFailed"
 ];
 
-export { API_PATH as A, defaultBrowserPort as a, defaultInspectPort as b, configFiles as c, defaultPort as d, extraInlineDeps as e, globalApis as g, workspacesFiles as w };
+export { API_PATH as A, defaultPort as a, defaultInspectPort as b, configFiles as c, defaultBrowserPort as d, extraInlineDeps as e, globalApis as g, workspacesFiles as w };

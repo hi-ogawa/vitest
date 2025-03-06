@@ -1,7 +1,7 @@
 import { File, TaskResultPack, TaskEventPack, CancelReason, FileSpecification, Task } from '@vitest/runner';
 import { ViteNodeResolveId, ModuleCacheMap, ModuleExecutionInfo } from 'vite-node';
-import { a as SerializedConfig } from './config.BCv-fVdT.js';
-import { T as TransformMode, U as UserConsoleLog, A as AfterSuiteRunMeta, E as Environment } from './environment.d8YfPkTm.js';
+import { a as SerializedConfig } from './config.d.CPLWxtX5.js';
+import { T as TransformMode, U as UserConsoleLog, A as AfterSuiteRunMeta, E as Environment } from './environment.d.C8UItCbf.js';
 import { SnapshotResult } from '@vitest/snapshot';
 
 type ArgumentsType<T> = T extends (...args: infer A) => any ? A : never;
@@ -79,78 +79,78 @@ type BirpcReturn<RemoteFunctions, LocalFunctions = Record<string, never>> = {
 };
 
 interface RuntimeRPC {
-    fetch: (id: string, transformMode: TransformMode) => Promise<{
-        externalize?: string;
-        id?: string;
-    }>;
-    transform: (id: string, transformMode: TransformMode) => Promise<{
-        code?: string;
-    }>;
-    resolveId: (id: string, importer: string | undefined, transformMode: TransformMode) => Promise<{
-        external?: boolean | 'absolute' | 'relative';
-        id: string;
-        /** @deprecated */
-        meta?: Record<string, any> | null;
-        /** @deprecated */
-        moduleSideEffects?: boolean | 'no-treeshake' | null;
-        /** @deprecated */
-        syntheticNamedExports?: boolean | string | null;
-    } | null>;
-    /**
-     * @deprecated unused
-     */
-    getSourceMap: (id: string, force?: boolean) => Promise<any>;
-    onUserConsoleLog: (log: UserConsoleLog) => void;
-    onUnhandledError: (err: unknown, type: string) => void;
-    onQueued: (file: File) => void;
-    onCollected: (files: File[]) => Promise<void>;
-    onAfterSuiteRun: (meta: AfterSuiteRunMeta) => void;
-    onTaskUpdate: (pack: TaskResultPack[], events: TaskEventPack[]) => Promise<void>;
-    onCancel: (reason: CancelReason) => void;
-    getCountOfFailedTests: () => number;
-    snapshotSaved: (snapshot: SnapshotResult) => void;
-    resolveSnapshotPath: (testPath: string) => string;
+	fetch: (id: string, transformMode: TransformMode) => Promise<{
+		externalize?: string
+		id?: string
+	}>;
+	transform: (id: string, transformMode: TransformMode) => Promise<{
+		code?: string
+	}>;
+	resolveId: (id: string, importer: string | undefined, transformMode: TransformMode) => Promise<{
+		external?: boolean | "absolute" | "relative"
+		id: string
+		/** @deprecated */
+		meta?: Record<string, any> | null
+		/** @deprecated */
+		moduleSideEffects?: boolean | "no-treeshake" | null
+		/** @deprecated */
+		syntheticNamedExports?: boolean | string | null
+	} | null>;
+	/**
+	* @deprecated unused
+	*/
+	getSourceMap: (id: string, force?: boolean) => Promise<any>;
+	onUserConsoleLog: (log: UserConsoleLog) => void;
+	onUnhandledError: (err: unknown, type: string) => void;
+	onQueued: (file: File) => void;
+	onCollected: (files: File[]) => Promise<void>;
+	onAfterSuiteRun: (meta: AfterSuiteRunMeta) => void;
+	onTaskUpdate: (pack: TaskResultPack[], events: TaskEventPack[]) => Promise<void>;
+	onCancel: (reason: CancelReason) => void;
+	getCountOfFailedTests: () => number;
+	snapshotSaved: (snapshot: SnapshotResult) => void;
+	resolveSnapshotPath: (testPath: string) => string;
 }
 interface RunnerRPC {
-    onCancel: (reason: CancelReason) => void;
+	onCancel: (reason: CancelReason) => void;
 }
 
 /** @deprecated unused */
 type ResolveIdFunction = (id: string, importer?: string) => Promise<ViteNodeResolveId | null>;
 type WorkerRPC = BirpcReturn<RuntimeRPC, RunnerRPC>;
 interface ContextTestEnvironment {
-    name: string;
-    transformMode?: TransformMode;
-    options: Record<string, any> | null;
+	name: string;
+	transformMode?: TransformMode;
+	options: Record<string, any> | null;
 }
 interface ContextRPC {
-    pool: string;
-    worker: string;
-    workerId: number;
-    config: SerializedConfig;
-    projectName: string;
-    files: string[] | FileSpecification[];
-    environment: ContextTestEnvironment;
-    providedContext: Record<string, any>;
-    invalidates?: string[];
+	pool: string;
+	worker: string;
+	workerId: number;
+	config: SerializedConfig;
+	projectName: string;
+	files: string[] | FileSpecification[];
+	environment: ContextTestEnvironment;
+	providedContext: Record<string, any>;
+	invalidates?: string[];
 }
 interface WorkerGlobalState {
-    ctx: ContextRPC;
-    config: SerializedConfig;
-    rpc: WorkerRPC;
-    current?: Task;
-    filepath?: string;
-    environment: Environment;
-    environmentTeardownRun?: boolean;
-    onCancel: Promise<CancelReason>;
-    moduleCache: ModuleCacheMap;
-    moduleExecutionInfo?: ModuleExecutionInfo;
-    providedContext: Record<string, any>;
-    durations: {
-        environment: number;
-        prepare: number;
-    };
-    onFilterStackTrace?: (trace: string) => string;
+	ctx: ContextRPC;
+	config: SerializedConfig;
+	rpc: WorkerRPC;
+	current?: Task;
+	filepath?: string;
+	environment: Environment;
+	environmentTeardownRun?: boolean;
+	onCancel: Promise<CancelReason>;
+	moduleCache: ModuleCacheMap;
+	moduleExecutionInfo?: ModuleExecutionInfo;
+	providedContext: Record<string, any>;
+	durations: {
+		environment: number
+		prepare: number
+	};
+	onFilterStackTrace?: (trace: string) => string;
 }
 
 export type { BirpcOptions as B, ContextRPC as C, RuntimeRPC as R, WorkerGlobalState as W, BirpcReturn as a, WorkerRPC as b, RunnerRPC as c, ContextTestEnvironment as d, ResolveIdFunction as e };

@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { t as takeCoverageInsideWorker } from './coverage.DnNIv-kJ.js';
 import { distDir } from '../path.js';
 import { r as rpc } from './rpc.TVf73xOu.js';
-import { l as loadDiffConfig, a as loadSnapshotSerializers } from './setup-common.Uaw6Zgv9.js';
+import { l as loadDiffConfig, a as loadSnapshotSerializers } from './setup-common.Dt2xrYSB.js';
 import { g as getWorkerState } from './utils.C8RiOc4B.js';
 
 function setupChaiConfig(config) {

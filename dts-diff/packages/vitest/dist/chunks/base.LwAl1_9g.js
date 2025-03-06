@@ -28,7 +28,7 @@ async function runBaseTests(method, state) {
   ));
   const [executor, { run }] = await Promise.all([
     startViteNode({ state, requestStubs: getDefaultRequestStubs() }),
-    import('./runBaseTests.DnaAUBKD.js')
+    import('./runBaseTests.BXP8jxpZ.js')
   ]);
   const fileSpecs = ctx.files.map(
     (f) => typeof f === "string" ? { filepath: f, testLocations: void 0 } : f

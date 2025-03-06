@@ -62,14 +62,14 @@
     }
   },
   "dependencies": {
-    "@vitest/spy": "https://pkg.pr.new/vitest-dev/vitest/@vitest/spy@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "@vitest/spy": "https://pkg.pr.new/vitest-dev/vitest/@vitest/spy@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.17"
   },
   "devDependencies": {
     "@types/estree": "^1.0.6",
-    "@vitest/spy": "https://pkg.pr.new/vitest-dev/vitest/@vitest/spy@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
-    "@vitest/utils": "https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "@vitest/spy": "https://pkg.pr.new/vitest-dev/vitest/@vitest/spy@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
+    "@vitest/utils": "https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
     "acorn-walk": "^8.3.4",
     "msw": "^2.7.3",
     "pathe": "^2.0.3",

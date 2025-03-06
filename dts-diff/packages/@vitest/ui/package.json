@@ -37,7 +37,7 @@
     "vitest": "3.0.7"
   },
   "dependencies": {
-    "@vitest/utils": "https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "@vitest/utils": "https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
     "fflate": "^0.8.2",
     "flatted": "^3.3.3",
     "pathe": "^2.0.3",
@@ -56,8 +56,8 @@
     "@types/ws": "^8.5.14",
     "@unocss/reset": "^0.65.4",
     "@vitejs/plugin-vue": "^5.2.1",
-    "@vitest/runner": "https://pkg.pr.new/vitest-dev/vitest/@vitest/runner@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
-    "@vitest/ws-client": "https://pkg.pr.new/vitest-dev/vitest/@vitest/ws-client@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "@vitest/runner": "https://pkg.pr.new/vitest-dev/vitest/@vitest/runner@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
+    "@vitest/ws-client": "https://pkg.pr.new/vitest-dev/vitest/@vitest/ws-client@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
     "@vue/test-utils": "^2.4.6",
     "@vueuse/core": "^12.7.0",
     "ansi-to-html": "^0.7.2",

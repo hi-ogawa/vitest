@@ -219,46 +219,46 @@ interface SelectorEngine {
 
 declare const selectorEngine: Ivya;
 declare abstract class Locator {
-    abstract selector: string;
-    private _parsedSelector;
-    protected _container?: Element | undefined;
-    protected _pwSelector?: string | undefined;
-    click(options?: UserEventClickOptions): Promise<void>;
-    dblClick(options?: UserEventClickOptions): Promise<void>;
-    tripleClick(options?: UserEventClickOptions): Promise<void>;
-    clear(): Promise<void>;
-    hover(options: UserEventHoverOptions): Promise<void>;
-    unhover(options: UserEventHoverOptions): Promise<void>;
-    fill(text: string, options?: UserEventFillOptions): Promise<void>;
-    upload(files: string | string[] | File | File[]): Promise<void>;
-    dropTo(target: Locator, options?: UserEventDragAndDropOptions): Promise<void>;
-    selectOptions(value: HTMLElement | HTMLElement[] | Locator | Locator[] | string | string[]): Promise<void>;
-    screenshot(options: Omit<LocatorScreenshotOptions, 'base64'> & {
-        base64: true;
-    }): Promise<{
-        path: string;
-        base64: string;
-    }>;
-    screenshot(options?: LocatorScreenshotOptions): Promise<string>;
-    protected abstract locator(selector: string): Locator;
-    protected abstract elementLocator(element: Element): Locator;
-    getByRole(role: string, options?: LocatorByRoleOptions): Locator;
-    getByAltText(text: string | RegExp, options?: LocatorOptions): Locator;
-    getByLabelText(text: string | RegExp, options?: LocatorOptions): Locator;
-    getByPlaceholder(text: string | RegExp, options?: LocatorOptions): Locator;
-    getByTestId(testId: string | RegExp): Locator;
-    getByText(text: string | RegExp, options?: LocatorOptions): Locator;
-    getByTitle(title: string | RegExp, options?: LocatorOptions): Locator;
-    query(): Element | null;
-    element(): Element;
-    elements(): Element[];
-    all(): Locator[];
-    nth(index: number): Locator;
-    first(): Locator;
-    last(): Locator;
-    toString(): string;
-    toJSON(): string;
-    protected triggerCommand<T>(command: string, ...args: any[]): Promise<T>;
+	abstract selector: string;
+	private _parsedSelector;
+	protected _container?: Element | undefined;
+	protected _pwSelector?: string | undefined;
+	click(options?: UserEventClickOptions): Promise<void>;
+	dblClick(options?: UserEventClickOptions): Promise<void>;
+	tripleClick(options?: UserEventClickOptions): Promise<void>;
+	clear(): Promise<void>;
+	hover(options: UserEventHoverOptions): Promise<void>;
+	unhover(options: UserEventHoverOptions): Promise<void>;
+	fill(text: string, options?: UserEventFillOptions): Promise<void>;
+	upload(files: string | string[] | File | File[]): Promise<void>;
+	dropTo(target: Locator, options?: UserEventDragAndDropOptions): Promise<void>;
+	selectOptions(value: HTMLElement | HTMLElement[] | Locator | Locator[] | string | string[]): Promise<void>;
+	screenshot(options: Omit<LocatorScreenshotOptions, "base64"> & {
+		base64: true
+	}): Promise<{
+		path: string
+		base64: string
+	}>;
+	screenshot(options?: LocatorScreenshotOptions): Promise<string>;
+	protected abstract locator(selector: string): Locator;
+	protected abstract elementLocator(element: Element): Locator;
+	getByRole(role: string, options?: LocatorByRoleOptions): Locator;
+	getByAltText(text: string | RegExp, options?: LocatorOptions): Locator;
+	getByLabelText(text: string | RegExp, options?: LocatorOptions): Locator;
+	getByPlaceholder(text: string | RegExp, options?: LocatorOptions): Locator;
+	getByTestId(testId: string | RegExp): Locator;
+	getByText(text: string | RegExp, options?: LocatorOptions): Locator;
+	getByTitle(title: string | RegExp, options?: LocatorOptions): Locator;
+	query(): Element | null;
+	element(): Element;
+	elements(): Element[];
+	all(): Locator[];
+	nth(index: number): Locator;
+	first(): Locator;
+	last(): Locator;
+	toString(): string;
+	toJSON(): string;
+	protected triggerCommand<T>(command: string, ...args: any[]): Promise<T>;
 }
 
 export { Locator, selectorEngine };

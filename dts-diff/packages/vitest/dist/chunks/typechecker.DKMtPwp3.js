@@ -1,4 +1,3 @@
-import { isCI } from 'std-env';
 import { writeFile, rm } from 'node:fs/promises';
 import { performance } from 'node:perf_hooks';
 import { TraceMap, generatedPositionFor, eachMapping } from '@vitest/utils/source-map';
@@ -44,11 +43,6 @@ function convertTasksToEvents(file, onTask) {
   visit(file);
   return { packs, events };
 }
-
-const isNode = typeof process < "u" && typeof process.stdout < "u" && !process.versions?.deno && !globalThis.window;
-const isDeno = typeof process < "u" && typeof process.stdout < "u" && process.versions?.deno !== void 0;
-const isWindows = (isNode || isDeno) && process.platform === "win32";
-const isTTY = (isNode || isDeno) && process.stdout?.isTTY && !isCI;
 
 const REGEXP_WRAP_PREFIX = "$$vitest:";
 function getOutputFile(config, reporter) {
@@ -960,4 +954,4 @@ function findGeneratedPosition(traceMap, { line, column, source }) {
   return { line: null, column: null };
 }
 
-export { TypeCheckError as T, Typechecker as a, isWindows as b, convertTasksToEvents as c, getOutputFile as g, hasFailedSnapshot as h, isTTY as i, wrapSerializableConfig as w };
+export { TypeCheckError as T, Typechecker as a, convertTasksToEvents as c, getOutputFile as g, hasFailedSnapshot as h, wrapSerializableConfig as w };

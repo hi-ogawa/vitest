@@ -1,8 +1,8 @@
 import { MessagePort } from 'node:worker_threads';
-import { C as ContextRPC } from './worker.BmVno_ab.js';
+import { C as ContextRPC } from './worker.d.CfY7tvMb.js';
 
 interface WorkerContext extends ContextRPC {
-    port: MessagePort;
+	port: MessagePort;
 }
 
 export type { WorkerContext as W };

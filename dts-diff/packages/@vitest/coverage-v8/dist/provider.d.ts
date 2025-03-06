@@ -6,20 +6,20 @@ import TestExclude from 'test-exclude';
 import { BaseCoverageProvider } from 'vitest/coverage';
 
 interface ScriptCoverageWithOffset extends Profiler.ScriptCoverage {
-    startOffset: number;
+	startOffset: number;
 }
-declare class V8CoverageProvider extends BaseCoverageProvider<ResolvedCoverageOptions<'v8'>> implements CoverageProvider {
-    name: "v8";
-    version: string;
-    testExclude: InstanceType<typeof TestExclude>;
-    initialize(ctx: Vitest): void;
-    createCoverageMap(): CoverageMap;
-    generateCoverage({ allTestsRun }: ReportContext): Promise<CoverageMap>;
-    generateReports(coverageMap: CoverageMap, allTestsRun?: boolean): Promise<void>;
-    parseConfigModule(configFilePath: string): Promise<ProxifiedModule<any>>;
-    private getUntestedFiles;
-    private getSources;
-    private convertCoverage;
+declare class V8CoverageProvider extends BaseCoverageProvider<ResolvedCoverageOptions<"v8">> implements CoverageProvider {
+	name: "v8";
+	version: string;
+	testExclude: InstanceType<typeof TestExclude>;
+	initialize(ctx: Vitest): void;
+	createCoverageMap(): CoverageMap;
+	generateCoverage({ allTestsRun }: ReportContext): Promise<CoverageMap>;
+	generateReports(coverageMap: CoverageMap, allTestsRun?: boolean): Promise<void>;
+	parseConfigModule(configFilePath: string): Promise<ProxifiedModule<any>>;
+	private getUntestedFiles;
+	private getSources;
+	private convertCoverage;
 }
 
 export { type ScriptCoverageWithOffset, V8CoverageProvider };

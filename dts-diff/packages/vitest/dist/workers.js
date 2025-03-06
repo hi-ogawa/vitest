@@ -1,6 +1,6 @@
 export { p as provideWorkerState } from './chunks/utils.C8RiOc4B.js';
 export { collect as collectVitestWorkerTests, run as runVitestWorker } from './worker.js';
-export { r as runBaseTests } from './chunks/base.XvKTsMeK.js';
+export { r as runBaseTests } from './chunks/base.LwAl1_9g.js';
 export { c as createForksRpcOptions, a as createThreadsRpcOptions, u as unwrapSerializableConfig } from './chunks/utils.Cn0zI1t3.js';
 export { r as runVmTests } from './chunks/vm.jEFQDlX_.js';
 import '@vitest/utils';

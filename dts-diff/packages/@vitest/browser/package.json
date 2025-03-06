@@ -81,8 +81,8 @@
   },
   "dependencies": {
     "@testing-library/user-event": "^14.6.1",
-    "@vitest/mocker": "https://pkg.pr.new/vitest-dev/vitest/@vitest/mocker@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
-    "@vitest/utils": "https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "@vitest/mocker": "https://pkg.pr.new/vitest-dev/vitest/@vitest/mocker@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
+    "@vitest/utils": "https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
     "magic-string": "^0.30.17",
     "msw": "^2.7.3",
     "sirv": "^3.0.1",
@@ -92,9 +92,9 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
     "@types/ws": "^8.5.14",
-    "@vitest/runner": "https://pkg.pr.new/vitest-dev/vitest/@vitest/runner@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
-    "@vitest/ui": "https://pkg.pr.new/vitest-dev/vitest/@vitest/ui@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
-    "@vitest/ws-client": "https://pkg.pr.new/vitest-dev/vitest/@vitest/ws-client@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "@vitest/runner": "https://pkg.pr.new/vitest-dev/vitest/@vitest/runner@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
+    "@vitest/ui": "https://pkg.pr.new/vitest-dev/vitest/@vitest/ui@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
+    "@vitest/ws-client": "https://pkg.pr.new/vitest-dev/vitest/@vitest/ws-client@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
     "@wdio/protocols": "^9.7.0",
     "@wdio/types": "^9.9.0",
     "birpc": "0.2.19",
@@ -106,7 +106,7 @@
     "playwright": "^1.50.1",
     "playwright-core": "^1.50.1",
     "safaridriver": "^1.0.0",
-    "vitest": "https://pkg.pr.new/vitest-dev/vitest/vitest@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "vitest": "https://pkg.pr.new/vitest-dev/vitest/vitest@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
     "webdriverio": "^9.10.0"
   },
   "scripts": {

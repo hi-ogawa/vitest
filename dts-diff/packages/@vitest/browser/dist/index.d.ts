@@ -23,125 +23,125 @@ type BirpcReturn<RemoteFunctions, LocalFunctions = Record<string, never>> = {
 };
 
 interface WebSocketBrowserHandlers {
-    resolveSnapshotPath: (testPath: string) => string;
-    resolveSnapshotRawPath: (testPath: string, rawPath: string) => string;
-    onUnhandledError: (error: unknown, type: string) => Promise<void>;
-    onQueued: (file: RunnerTestFile) => void;
-    onCollected: (files: RunnerTestFile[]) => Promise<void>;
-    onTaskUpdate: (packs: TaskResultPack[], events: TaskEventPack[]) => void;
-    onAfterSuiteRun: (meta: AfterSuiteRunMeta) => void;
-    onCancel: (reason: CancelReason) => void;
-    getCountOfFailedTests: () => number;
-    readSnapshotFile: (id: string) => Promise<string | null>;
-    saveSnapshotFile: (id: string, content: string) => Promise<void>;
-    removeSnapshotFile: (id: string) => Promise<void>;
-    sendLog: (log: UserConsoleLog) => void;
-    finishBrowserTests: (sessionId: string) => void;
-    snapshotSaved: (snapshot: SnapshotResult) => void;
-    debug: (...args: string[]) => void;
-    resolveId: (id: string, importer?: string) => Promise<ServerIdResolution | null>;
-    triggerCommand: <T>(sessionId: string, command: string, testPath: string | undefined, payload: unknown[]) => Promise<T>;
-    resolveMock: (id: string, importer: string, options: {
-        mock: 'spy' | 'factory' | 'auto';
-    }) => Promise<ServerMockResolution>;
-    invalidate: (ids: string[]) => void;
-    getBrowserFileSourceMap: (id: string) => SourceMap | null | {
-        mappings: '';
-    } | undefined;
-    wdioSwitchContext: (direction: 'iframe' | 'parent') => void;
-    sendCdpEvent: (sessionId: string, event: string, payload?: Record<string, unknown>) => unknown;
-    trackCdpEvent: (sessionId: string, type: 'on' | 'once' | 'off', event: string, listenerId: string) => void;
+	resolveSnapshotPath: (testPath: string) => string;
+	resolveSnapshotRawPath: (testPath: string, rawPath: string) => string;
+	onUnhandledError: (error: unknown, type: string) => Promise<void>;
+	onQueued: (file: RunnerTestFile) => void;
+	onCollected: (files: RunnerTestFile[]) => Promise<void>;
+	onTaskUpdate: (packs: TaskResultPack[], events: TaskEventPack[]) => void;
+	onAfterSuiteRun: (meta: AfterSuiteRunMeta) => void;
+	onCancel: (reason: CancelReason) => void;
+	getCountOfFailedTests: () => number;
+	readSnapshotFile: (id: string) => Promise<string | null>;
+	saveSnapshotFile: (id: string, content: string) => Promise<void>;
+	removeSnapshotFile: (id: string) => Promise<void>;
+	sendLog: (log: UserConsoleLog) => void;
+	finishBrowserTests: (sessionId: string) => void;
+	snapshotSaved: (snapshot: SnapshotResult) => void;
+	debug: (...args: string[]) => void;
+	resolveId: (id: string, importer?: string) => Promise<ServerIdResolution | null>;
+	triggerCommand: <T>(sessionId: string, command: string, testPath: string | undefined, payload: unknown[]) => Promise<T>;
+	resolveMock: (id: string, importer: string, options: {
+		mock: "spy" | "factory" | "auto"
+	}) => Promise<ServerMockResolution>;
+	invalidate: (ids: string[]) => void;
+	getBrowserFileSourceMap: (id: string) => SourceMap | null | {
+		mappings: ""
+	} | undefined;
+	wdioSwitchContext: (direction: "iframe" | "parent") => void;
+	sendCdpEvent: (sessionId: string, event: string, payload?: Record<string, unknown>) => unknown;
+	trackCdpEvent: (sessionId: string, type: "on" | "once" | "off", event: string, listenerId: string) => void;
 }
 interface WebSocketBrowserEvents {
-    onCancel: (reason: CancelReason) => void;
-    createTesters: (files: string[]) => Promise<void>;
-    cdpEvent: (event: string, payload: unknown) => void;
+	onCancel: (reason: CancelReason) => void;
+	createTesters: (files: string[]) => Promise<void>;
+	cdpEvent: (event: string, payload: unknown) => void;
 }
 type WebSocketBrowserRPC = BirpcReturn<WebSocketBrowserEvents, WebSocketBrowserHandlers>;
 interface SourceMap {
-    file: string;
-    mappings: string;
-    names: string[];
-    sources: string[];
-    sourcesContent?: string[];
-    version: number;
-    toString: () => string;
-    toUrl: () => string;
+	file: string;
+	mappings: string;
+	names: string[];
+	sources: string[];
+	sourcesContent?: string[];
+	version: number;
+	toString: () => string;
+	toUrl: () => string;
 }
 
 declare class BrowserServerCDPHandler {
-    private session;
-    private tester;
-    private listenerIds;
-    private listeners;
-    constructor(session: CDPSession, tester: WebSocketBrowserRPC);
-    send(method: string, params?: Record<string, unknown>): Promise<unknown>;
-    on(event: string, id: string, once?: boolean): void;
-    off(event: string, id: string): void;
-    once(event: string, listener: string): void;
+	private session;
+	private tester;
+	private listenerIds;
+	private listeners;
+	constructor(session: CDPSession, tester: WebSocketBrowserRPC);
+	send(method: string, params?: Record<string, unknown>): Promise<unknown>;
+	on(event: string, id: string, once?: boolean): void;
+	off(event: string, id: string): void;
+	once(event: string, listener: string): void;
 }
 
 declare class BrowserServerState implements BrowserServerState$1 {
-    readonly orchestrators: Map<string, WebSocketBrowserRPC>;
-    readonly testers: Map<string, WebSocketBrowserRPC>;
+	readonly orchestrators: Map<string, WebSocketBrowserRPC>;
+	readonly testers: Map<string, WebSocketBrowserRPC>;
 }
 
 declare class ProjectBrowser implements ProjectBrowser$1 {
-    project: TestProject;
-    base: string;
-    testerHtml: Promise<string> | string;
-    testerFilepath: string;
-    locatorsUrl: string | undefined;
-    provider: BrowserProvider;
-    vitest: Vitest;
-    config: ResolvedConfig;
-    children: Set<ProjectBrowser>;
-    parent: ParentBrowserProject;
-    state: BrowserServerState;
-    constructor(project: TestProject, base: string);
-    get vite(): ViteDevServer;
-    wrapSerializedConfig(): SerializedConfig;
-    initBrowserProvider(project: TestProject): Promise<void>;
-    parseErrorStacktrace(e: ErrorWithDiff, options?: StackTraceParserOptions): ParsedStack[];
-    parseStacktrace(trace: string, options?: StackTraceParserOptions): ParsedStack[];
-    close(): Promise<void>;
+	project: TestProject;
+	base: string;
+	testerHtml: Promise<string> | string;
+	testerFilepath: string;
+	locatorsUrl: string | undefined;
+	provider: BrowserProvider;
+	vitest: Vitest;
+	config: ResolvedConfig;
+	children: Set<ProjectBrowser>;
+	parent: ParentBrowserProject;
+	state: BrowserServerState;
+	constructor(project: TestProject, base: string);
+	get vite(): ViteDevServer;
+	wrapSerializedConfig(): SerializedConfig;
+	initBrowserProvider(project: TestProject): Promise<void>;
+	parseErrorStacktrace(e: ErrorWithDiff, options?: StackTraceParserOptions): ParsedStack[];
+	parseStacktrace(trace: string, options?: StackTraceParserOptions): ParsedStack[];
+	close(): Promise<void>;
 }
 
 declare class ParentBrowserProject {
-    project: TestProject;
-    base: string;
-    orchestratorScripts: string | undefined;
-    testerScripts: HtmlTagDescriptor[] | undefined;
-    faviconUrl: string;
-    prefixTesterUrl: string;
-    manifest: Promise<Vite.Manifest> | Vite.Manifest;
-    vite: Vite.ViteDevServer;
-    private stackTraceOptions;
-    orchestratorHtml: Promise<string> | string;
-    injectorJs: Promise<string> | string;
-    errorCatcherUrl: string;
-    locatorsUrl: string | undefined;
-    stateJs: Promise<string> | string;
-    commands: Record<string, BrowserCommand<any>>;
-    children: Set<ProjectBrowser>;
-    vitest: Vitest;
-    config: ResolvedConfig;
-    private sourceMapCache;
-    constructor(project: TestProject, base: string);
-    setServer(vite: Vite.ViteDevServer): void;
-    spawn(project: TestProject): ProjectBrowser;
-    parseErrorStacktrace(e: ErrorWithDiff, options?: StackTraceParserOptions): ParsedStack[];
-    parseStacktrace(trace: string, options?: StackTraceParserOptions): ParsedStack[];
-    readonly cdps: Map<string, BrowserServerCDPHandler>;
-    private cdpSessionsPromises;
-    ensureCDPHandler(sessionId: string, rpcId: string): Promise<BrowserServerCDPHandler>;
-    removeCDPHandler(sessionId: string): void;
-    formatScripts(scripts: BrowserScript[] | undefined): Promise<HtmlTagDescriptor[]>;
-    resolveTesterUrl(pathname: string): {
-        sessionId: string;
-        testFile: string;
-    };
-    private retrieveSourceMapURL;
+	project: TestProject;
+	base: string;
+	orchestratorScripts: string | undefined;
+	testerScripts: HtmlTagDescriptor[] | undefined;
+	faviconUrl: string;
+	prefixTesterUrl: string;
+	manifest: Promise<Vite.Manifest> | Vite.Manifest;
+	vite: Vite.ViteDevServer;
+	private stackTraceOptions;
+	orchestratorHtml: Promise<string> | string;
+	injectorJs: Promise<string> | string;
+	errorCatcherUrl: string;
+	locatorsUrl: string | undefined;
+	stateJs: Promise<string> | string;
+	commands: Record<string, BrowserCommand<any>>;
+	children: Set<ProjectBrowser>;
+	vitest: Vitest;
+	config: ResolvedConfig;
+	private sourceMapCache;
+	constructor(project: TestProject, base: string);
+	setServer(vite: Vite.ViteDevServer): void;
+	spawn(project: TestProject): ProjectBrowser;
+	parseErrorStacktrace(e: ErrorWithDiff, options?: StackTraceParserOptions): ParsedStack[];
+	parseStacktrace(trace: string, options?: StackTraceParserOptions): ParsedStack[];
+	readonly cdps: Map<string, BrowserServerCDPHandler>;
+	private cdpSessionsPromises;
+	ensureCDPHandler(sessionId: string, rpcId: string): Promise<BrowserServerCDPHandler>;
+	removeCDPHandler(sessionId: string): void;
+	formatScripts(scripts: BrowserScript[] | undefined): Promise<HtmlTagDescriptor[]>;
+	resolveTesterUrl(pathname: string): {
+		sessionId: string
+		testFile: string
+	};
+	private retrieveSourceMapURL;
 }
 
 declare const distRoot: string;

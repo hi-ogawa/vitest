@@ -13,7 +13,7 @@ async function setupCommonEnv(config) {
   globalSetup = true;
   setSafeTimers();
   if (config.globals) {
-    (await import('./globals.CydvVTgC.js')).registerApiGlobally();
+    (await import('./globals.toiTLnTO.js')).registerApiGlobally();
   }
 }
 function setupDefines(defines) {

@@ -11,11 +11,11 @@ import assert from 'node:assert';
 import v8 from 'node:v8';
 import { format, inspect } from 'node:util';
 import c from 'tinyrainbow';
-import { e as extraInlineDeps, a as defaultBrowserPort, b as defaultInspectPort, d as defaultPort } from './constants.fzPh7AOq.js';
+import { e as extraInlineDeps, d as defaultBrowserPort, b as defaultInspectPort, a as defaultPort } from './constants.DTYd6dNH.js';
+import { c as configDefaults, e as benchmarkConfigDefaults } from './defaults.C2Ndd9wx.js';
+import { a as isWindows } from './env.D4Lgay0q.js';
 import * as nodeos from 'node:os';
 import nodeos__default from 'node:os';
-import { w as wrapSerializableConfig, a as Typechecker, b as isWindows } from './typechecker.cZ0LjdSi.js';
-import { isCI, provider } from 'std-env';
 import { isatty } from 'node:tty';
 import { g as getDefaultExportFromCjs } from './_commonjsHelpers.BFTU3MAI.js';
 import require$$0 from 'util';
@@ -24,10 +24,12 @@ import { version } from 'vite';
 import EventEmitter from 'node:events';
 import { c as createBirpc } from './index.68735LiX.js';
 import Tinypool$1, { Tinypool } from 'tinypool';
+import { w as wrapSerializableConfig, a as Typechecker } from './typechecker.DKMtPwp3.js';
 import { MessageChannel } from 'node:worker_threads';
 import { hasFailed } from '@vitest/runner/utils';
 import { rootDir } from '../path.js';
 import { slash as slash$1 } from 'vite-node/utils';
+import { isCI, provider } from 'std-env';
 
 function groupBy(collection, iteratee) {
   return collection.reduce((acc, item) => {
@@ -2301,120 +2303,6 @@ function resolvePackage(name, options = {}) {
     return false;
   }
 }
-
-const defaultInclude = ["**/*.{test,spec}.?(c|m)[jt]s?(x)"];
-const defaultExclude = [
-  "**/node_modules/**",
-  "**/dist/**",
-  "**/cypress/**",
-  "**/.{idea,git,cache,output,temp}/**",
-  "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*"
-];
-const benchmarkConfigDefaults = {
-  include: ["**/*.{bench,benchmark}.?(c|m)[jt]s?(x)"],
-  exclude: defaultExclude,
-  includeSource: [],
-  reporters: ["default"],
-  includeSamples: false
-};
-const defaultCoverageExcludes = [
-  "coverage/**",
-  "dist/**",
-  "**/node_modules/**",
-  "**/[.]**",
-  "packages/*/test?(s)/**",
-  "**/*.d.ts",
-  "**/virtual:*",
-  "**/__x00__*",
-  "**/\0*",
-  "cypress/**",
-  "test?(s)/**",
-  "test?(-*).?(c|m)[jt]s?(x)",
-  "**/*{.,-}{test,spec,bench,benchmark}?(-d).?(c|m)[jt]s?(x)",
-  "**/__tests__/**",
-  "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*",
-  "**/vitest.{workspace,projects}.[jt]s?(on)",
-  "**/.{eslint,mocha,prettier}rc.{?(c|m)js,yml}"
-];
-const coverageConfigDefaults = {
-  provider: "v8",
-  enabled: false,
-  all: true,
-  clean: true,
-  cleanOnRerun: true,
-  reportsDirectory: "./coverage",
-  exclude: defaultCoverageExcludes,
-  reportOnFailure: false,
-  reporter: [
-    ["text", {}],
-    ["html", {}],
-    ["clover", {}],
-    ["json", {}]
-  ],
-  extension: [
-    ".js",
-    ".cjs",
-    ".mjs",
-    ".ts",
-    ".mts",
-    ".tsx",
-    ".jsx",
-    ".vue",
-    ".svelte",
-    ".marko",
-    ".astro"
-  ],
-  allowExternal: false,
-  excludeAfterRemap: false,
-  ignoreEmptyLines: true,
-  processingConcurrency: Math.min(
-    20,
-    nodeos__default.availableParallelism?.() ?? nodeos__default.cpus().length
-  )
-};
-const fakeTimersDefaults = {
-  loopLimit: 1e4,
-  shouldClearNativeTimers: true
-};
-const configDefaults = Object.freeze({
-  allowOnly: !isCI,
-  isolate: true,
-  watch: !isCI,
-  globals: false,
-  environment: "node",
-  pool: "forks",
-  clearMocks: false,
-  restoreMocks: false,
-  mockReset: false,
-  unstubGlobals: false,
-  unstubEnvs: false,
-  include: defaultInclude,
-  exclude: defaultExclude,
-  teardownTimeout: 1e4,
-  forceRerunTriggers: ["**/package.json/**", "**/{vitest,vite}.config.*/**"],
-  update: false,
-  reporters: [],
-  silent: false,
-  hideSkippedTests: false,
-  api: false,
-  ui: false,
-  uiBase: "/__vitest__/",
-  open: !isCI,
-  css: {
-    include: []
-  },
-  coverage: coverageConfigDefaults,
-  fakeTimers: fakeTimersDefaults,
-  maxConcurrency: 5,
-  dangerouslyIgnoreUnhandledErrors: false,
-  typecheck: {
-    checker: "tsc",
-    include: ["**/*.{test,spec}-d.?(c|m)[jt]s?(x)"],
-    exclude: defaultExclude
-  },
-  slowTestThreshold: 300,
-  disableConsoleIntercept: false
-});
 
 function getWorkersCountByPercentage(percent) {
   const maxWorkersCount = nodeos__default.availableParallelism?.() ?? nodeos__default.cpus().length;
@@ -8500,4 +8388,4 @@ function isPlaywrightChromiumOnly(vitest, config) {
   return true;
 }
 
-export { BaseSequencer as B, RandomSequencer as R, VitestCache as V, resolveConfig as a, resolveApiServerConfig as b, coverageConfigDefaults as c, createMethodsRPC as d, configDefaults as e, isBrowserEnabled as f, getFilePoolName as g, hash as h, isPackageExists as i, groupBy as j, createPool as k, mm as m, resolveCoverageReporters as r, stdout as s, wildcardPatternToRegExp as w };
+export { BaseSequencer as B, RandomSequencer as R, VitestCache as V, resolveConfig as a, resolveApiServerConfig as b, createMethodsRPC as c, isBrowserEnabled as d, groupBy as e, createPool as f, getFilePoolName as g, hash as h, isPackageExists as i, mm as m, resolveCoverageReporters as r, stdout as s, wildcardPatternToRegExp as w };

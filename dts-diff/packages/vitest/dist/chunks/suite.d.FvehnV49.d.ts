@@ -1,5 +1,5 @@
 import { Test } from '@vitest/runner';
-import { c as BenchmarkAPI, a as BenchFunction } from './benchmark.CFFwLv-O.js';
+import { c as BenchmarkAPI, a as BenchFunction } from './benchmark.d.BwvBVTda.js';
 import { Options } from 'tinybench';
 import '@vitest/runner/utils';
 

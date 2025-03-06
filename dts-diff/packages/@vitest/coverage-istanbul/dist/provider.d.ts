@@ -5,21 +5,21 @@ import { Instrumenter } from 'istanbul-lib-instrument';
 import TestExclude from 'test-exclude';
 import { BaseCoverageProvider } from 'vitest/coverage';
 
-declare class IstanbulCoverageProvider extends BaseCoverageProvider<ResolvedCoverageOptions<'istanbul'>> implements CoverageProvider {
-    name: "istanbul";
-    version: string;
-    instrumenter: Instrumenter;
-    testExclude: InstanceType<typeof TestExclude>;
-    initialize(ctx: Vitest): void;
-    onFileTransform(sourceCode: string, id: string, pluginCtx: any): {
-        code: string;
-        map: any;
-    } | undefined;
-    createCoverageMap(): libCoverage.CoverageMap;
-    generateCoverage({ allTestsRun }: ReportContext): Promise<CoverageMap>;
-    generateReports(coverageMap: CoverageMap, allTestsRun: boolean | undefined): Promise<void>;
-    parseConfigModule(configFilePath: string): Promise<ProxifiedModule<any>>;
-    private getCoverageMapForUncoveredFiles;
+declare class IstanbulCoverageProvider extends BaseCoverageProvider<ResolvedCoverageOptions<"istanbul">> implements CoverageProvider {
+	name: "istanbul";
+	version: string;
+	instrumenter: Instrumenter;
+	testExclude: InstanceType<typeof TestExclude>;
+	initialize(ctx: Vitest): void;
+	onFileTransform(sourceCode: string, id: string, pluginCtx: any): {
+		code: string
+		map: any
+	} | undefined;
+	createCoverageMap(): libCoverage.CoverageMap;
+	generateCoverage({ allTestsRun }: ReportContext): Promise<CoverageMap>;
+	generateReports(coverageMap: CoverageMap, allTestsRun: boolean | undefined): Promise<void>;
+	parseConfigModule(configFilePath: string): Promise<ProxifiedModule<any>>;
+	private getCoverageMapForUncoveredFiles;
 }
 
 export { IstanbulCoverageProvider };

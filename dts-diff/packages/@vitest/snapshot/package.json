@@ -38,13 +38,13 @@
     "dist"
   ],
   "dependencies": {
-    "@vitest/pretty-format": "https://pkg.pr.new/vitest-dev/vitest/@vitest/pretty-format@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "@vitest/pretty-format": "https://pkg.pr.new/vitest-dev/vitest/@vitest/pretty-format@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
     "magic-string": "^0.30.17",
     "pathe": "^2.0.3"
   },
   "devDependencies": {
     "@types/natural-compare": "^1.4.3",
-    "@vitest/utils": "https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "@vitest/utils": "https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
     "natural-compare": "^1.4.0"
   },
   "scripts": {

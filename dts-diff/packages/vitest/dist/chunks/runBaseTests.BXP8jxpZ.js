@@ -1,6 +1,6 @@
 import { performance } from 'node:perf_hooks';
 import { startTests, collectTests } from '@vitest/runner';
-import { a as resolveSnapshotEnvironment, s as setupChaiConfig, r as resolveTestRunner } from './index.BmFgJtkv.js';
+import { a as resolveSnapshotEnvironment, s as setupChaiConfig, r as resolveTestRunner } from './index.BwTBEzWI.js';
 import { s as startCoverageInsideWorker, a as stopCoverageInsideWorker } from './coverage.DnNIv-kJ.js';
 import { a as globalExpect, v as vi } from './vi.B5EKKJdE.js';
 import { c as closeInspector } from './inspector.DKLceBVD.js';
@@ -12,7 +12,7 @@ import { getSafeTimers } from '@vitest/utils';
 import { KNOWN_ASSET_TYPES } from 'vite-node/constants';
 import { installSourcemapsSupport } from 'vite-node/source-map';
 import { V as VitestIndex } from './index.CNRemkXW.js';
-import { s as setupCommonEnv } from './setup-common.Uaw6Zgv9.js';
+import { s as setupCommonEnv } from './setup-common.Dt2xrYSB.js';
 import { g as getWorkerState, r as resetModules } from './utils.C8RiOc4B.js';
 import 'chai';
 import 'node:path';

@@ -38,7 +38,7 @@
     "ws": "^8.18.1"
   },
   "devDependencies": {
-    "@vitest/runner": "https://pkg.pr.new/vitest-dev/vitest/@vitest/runner@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50"
+    "@vitest/runner": "https://pkg.pr.new/vitest-dev/vitest/@vitest/runner@43abe5d06141cc430bf34bde59a64da7ce2bec7b"
   },
   "scripts": {
     "build": "rimraf dist && rollup -c",

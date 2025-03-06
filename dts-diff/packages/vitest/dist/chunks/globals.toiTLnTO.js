@@ -1,4 +1,4 @@
-import { g as globalApis } from './constants.fzPh7AOq.js';
+import { g as globalApis } from './constants.DTYd6dNH.js';
 import { V as VitestIndex } from './index.CNRemkXW.js';
 import './vi.B5EKKJdE.js';
 import '@vitest/expect';

@@ -60,7 +60,7 @@
     "dist"
   ],
   "dependencies": {
-    "@vitest/pretty-format": "https://pkg.pr.new/vitest-dev/vitest/@vitest/pretty-format@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "@vitest/pretty-format": "https://pkg.pr.new/vitest-dev/vitest/@vitest/pretty-format@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
     "loupe": "^3.1.3",
     "tinyrainbow": "^2.0.0"
   },

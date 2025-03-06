@@ -5,7 +5,7 @@ import { detectPackageManager, installPackage } from './index.Bw6JxgX8.js';
 import { p as prompt, f as findUp } from './index.DBIGubLC.js';
 import { x } from 'tinyexec';
 import c from 'tinyrainbow';
-import { c as configFiles } from './constants.fzPh7AOq.js';
+import { c as configFiles } from './constants.DTYd6dNH.js';
 import 'node:process';
 import 'node:url';
 import './_commonjsHelpers.BFTU3MAI.js';

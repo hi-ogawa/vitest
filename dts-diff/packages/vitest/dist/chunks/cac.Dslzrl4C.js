@@ -2,7 +2,7 @@ import { toArray } from '@vitest/utils';
 import { EventEmitter } from 'events';
 import { normalize } from 'pathe';
 import c from 'tinyrainbow';
-import { d as defaultPort, a as defaultBrowserPort } from './constants.fzPh7AOq.js';
+import { a as defaultPort, d as defaultBrowserPort } from './constants.DTYd6dNH.js';
 
 function toArr(any) {
 	return any == null ? [] : Array.isArray(any) ? any : [any];
@@ -1591,7 +1591,7 @@ async function start(mode, cliFilters, options) {
   } catch {
   }
   try {
-    const { startVitest } = await import('./cli-api.Cg2ubQcw.js').then(function (n) { return n.f; });
+    const { startVitest } = await import('./cli-api.CiXgtXut.js').then(function (n) { return n.f; });
     const ctx = await startVitest(mode, cliFilters.map(normalize), normalizeCliOptions(cliFilters, options));
     if (!ctx.shouldKeepServer()) {
       await ctx.exit();
@@ -1613,7 +1613,7 @@ async function init(project) {
     console.error(new Error('Only the "browser" project is supported. Use "vitest init browser" to create a new project.'));
     process.exit(1);
   }
-  const { create } = await import('./creator.2CFRE1Yx.js');
+  const { create } = await import('./creator.BsBnpTzI.js');
   await create();
 }
 async function collect(mode, cliFilters, options) {
@@ -1622,7 +1622,7 @@ async function collect(mode, cliFilters, options) {
   } catch {
   }
   try {
-    const { prepareVitest, processCollected, outputFileList } = await import('./cli-api.Cg2ubQcw.js').then(function (n) { return n.f; });
+    const { prepareVitest, processCollected, outputFileList } = await import('./cli-api.CiXgtXut.js').then(function (n) { return n.f; });
     const ctx = await prepareVitest(mode, {
       ...normalizeCliOptions(cliFilters, options),
       watch: false,

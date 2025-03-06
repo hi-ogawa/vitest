@@ -150,13 +150,13 @@
     }
   },
   "dependencies": {
-    "@vitest/expect": "https://pkg.pr.new/vitest-dev/vitest/@vitest/expect@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
-    "@vitest/mocker": "https://pkg.pr.new/vitest-dev/vitest/@vitest/mocker@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
-    "@vitest/pretty-format": "https://pkg.pr.new/vitest-dev/vitest/@vitest/pretty-format@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
-    "@vitest/runner": "https://pkg.pr.new/vitest-dev/vitest/@vitest/runner@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
-    "@vitest/snapshot": "https://pkg.pr.new/vitest-dev/vitest/@vitest/snapshot@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
-    "@vitest/spy": "https://pkg.pr.new/vitest-dev/vitest/@vitest/spy@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
-    "@vitest/utils": "https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "@vitest/expect": "https://pkg.pr.new/vitest-dev/vitest/@vitest/expect@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
+    "@vitest/mocker": "https://pkg.pr.new/vitest-dev/vitest/@vitest/mocker@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
+    "@vitest/pretty-format": "https://pkg.pr.new/vitest-dev/vitest/@vitest/pretty-format@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
+    "@vitest/runner": "https://pkg.pr.new/vitest-dev/vitest/@vitest/runner@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
+    "@vitest/snapshot": "https://pkg.pr.new/vitest-dev/vitest/@vitest/snapshot@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
+    "@vitest/spy": "https://pkg.pr.new/vitest-dev/vitest/@vitest/spy@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
+    "@vitest/utils": "https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
     "chai": "^5.2.0",
     "debug": "^4.4.0",
     "expect-type": "^1.1.0",
@@ -168,7 +168,7 @@
     "tinypool": "^1.0.2",
     "tinyrainbow": "^2.0.0",
     "vite": "^5.0.0 || ^6.0.0",
-    "vite-node": "https://pkg.pr.new/vitest-dev/vitest/vite-node@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "vite-node": "https://pkg.pr.new/vitest-dev/vitest/vite-node@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
     "why-is-node-running": "^2.3.0"
   },
   "devDependencies": {

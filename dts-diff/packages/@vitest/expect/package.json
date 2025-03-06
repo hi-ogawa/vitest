@@ -30,14 +30,14 @@
     "dist"
   ],
   "dependencies": {
-    "@vitest/spy": "https://pkg.pr.new/vitest-dev/vitest/@vitest/spy@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
-    "@vitest/utils": "https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "@vitest/spy": "https://pkg.pr.new/vitest-dev/vitest/@vitest/spy@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
+    "@vitest/utils": "https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
     "chai": "^5.2.0",
     "tinyrainbow": "^2.0.0"
   },
   "devDependencies": {
     "@types/chai": "5.0.1",
-    "@vitest/runner": "https://pkg.pr.new/vitest-dev/vitest/@vitest/runner@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "@vitest/runner": "https://pkg.pr.new/vitest-dev/vitest/@vitest/runner@43abe5d06141cc430bf34bde59a64da7ce2bec7b",
     "rollup-plugin-copy": "^3.5.0"
   },
   "scripts": {

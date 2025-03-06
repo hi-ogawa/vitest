@@ -20,7 +20,7 @@ packages=(
 )
 
 for package in "${packages[@]}"; do
-  filename=$(npm pack "https://pkg.pr.new/${package}@0c2924b")
+  filename=$(npm pack "https://pkg.pr.new/${package}@43abe5d")
   mkdir -p packages/${package}
   tar -xzf "${filename}" -C "packages/${package}" --strip-components=1
 done
