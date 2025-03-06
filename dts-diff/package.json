@@ -1,0 +1,20 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@vitest/browser": "https://pkg.pr.new/@vitest/browser@0c2924b",
+    "@vitest/coverage-istanbul": "https://pkg.pr.new/@vitest/coverage-istanbul@0c2924b",
+    "@vitest/coverage-v8": "https://pkg.pr.new/@vitest/coverage-v8@0c2924b",
+    "@vitest/expect": "https://pkg.pr.new/@vitest/expect@0c2924b",
+    "@vitest/mocker": "https://pkg.pr.new/@vitest/mocker@0c2924b",
+    "@vitest/pretty-format": "https://pkg.pr.new/@vitest/pretty-format@0c2924b",
+    "@vitest/runner": "https://pkg.pr.new/@vitest/runner@0c2924b",
+    "@vitest/snapshot": "https://pkg.pr.new/@vitest/snapshot@0c2924b",
+    "@vitest/spy": "https://pkg.pr.new/@vitest/spy@0c2924b",
+    "@vitest/ui": "https://pkg.pr.new/@vitest/ui@0c2924b",
+    "@vitest/utils": "https://pkg.pr.new/@vitest/utils@0c2924b",
+    "vite-node": "https://pkg.pr.new/vite-node@0c2924b",
+    "vitest": "https://pkg.pr.new/vitest@0c2924b",
+    "@vitest/web-worker": "https://pkg.pr.new/@vitest/web-worker@0c2924b",
+    "@vitest/ws-client": "https://pkg.pr.new/@vitest/ws-client@0c2924b"
+  }
+}

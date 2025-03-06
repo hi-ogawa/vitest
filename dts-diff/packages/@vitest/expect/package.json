@@ -1,0 +1,47 @@
+{
+  "name": "@vitest/expect",
+  "type": "module",
+  "version": "3.0.7",
+  "description": "Jest's expect matchers as a Chai plugin",
+  "license": "MIT",
+  "funding": "https://opencollective.com/vitest",
+  "homepage": "https://github.com/vitest-dev/vitest/tree/main/packages/expect#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitest-dev/vitest.git",
+    "directory": "packages/expect"
+  },
+  "bugs": {
+    "url": "https://github.com/vitest-dev/vitest/issues"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*": "./*"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./index.d.ts",
+  "files": [
+    "*.d.ts",
+    "dist"
+  ],
+  "dependencies": {
+    "@vitest/spy": "https://pkg.pr.new/vitest-dev/vitest/@vitest/spy@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "@vitest/utils": "https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "chai": "^5.2.0",
+    "tinyrainbow": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/chai": "5.0.1",
+    "@vitest/runner": "https://pkg.pr.new/vitest-dev/vitest/@vitest/runner@0c2924b7aeb7eaf1b1fa0e78d2da76a7f3197b50",
+    "rollup-plugin-copy": "^3.5.0"
+  },
+  "scripts": {
+    "build": "rimraf dist && rollup -c",
+    "dev": "rollup -c --watch"
+  }
+}
