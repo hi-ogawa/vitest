@@ -708,15 +708,25 @@ export abstract class BaseReporter implements Reporter {
     const pathDisplay = this.relative(path)
     const color = external ? c.magenta : (c: string) => c
     const slicedPath = pathDisplay.slice(-44)
+    const isTruncated = pathDisplay.length > slicedPath.length
+
     let title = ''
-    if (pathDisplay.length > slicedPath.length) {
+    if (isTruncated) {
       title += '...'
     }
     if (nested) {
       title = ` ${F_DOWN_RIGHT} ${title}`
     }
     title += slicedPath
-    return color(title.padEnd(50))
+
+    const coloredPadded = color(title.padEnd(50))
+
+    // Wrap in OSC 8 hyperlink if truncated to preserve clickability
+    if (isTruncated && c.isColorSupported) {
+      return `\x1B]8;;file://${path}\x07${coloredPadded}\x1B]8;;\x07`
+    }
+
+    return coloredPadded
   }
 
   private printErrorsSummary(files: File[], errors: unknown[]) {
