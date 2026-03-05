@@ -23,11 +23,11 @@ import { processError } from '@vitest/utils/error' // TODO: load dynamically
 import { shuffle } from '@vitest/utils/helpers'
 import { getSafeTimers } from '@vitest/utils/timers'
 import { collectTests } from './collect'
-import { abortContextSignal } from './context'
+import { abortContextSignal, abortIfTimeout, withTestTimeout } from './context'
 import { AroundHookMultipleCallsError, AroundHookSetupError, AroundHookTeardownError, PendingError, TestRunAbortError } from './errors'
 import { callFixtureCleanup, callFixtureCleanupFrom, getFixtureCleanupCount, TestFixtures } from './fixture'
 import { getAroundHookStackTrace, getAroundHookTimeout, getBeforeHookCleanupCallback } from './hooks'
-import { getFn, getHooks } from './map'
+import { getFn, getHooks, getTaskTimeoutStackTrace } from './map'
 import { addRunningTest, getRunningTests, setCurrentTest } from './test-state'
 import { limitConcurrency } from './utils/limit-concurrency'
 import { partitionSuiteChildren } from './utils/suite'
@@ -649,7 +649,14 @@ export async function runTest(test: Test, runner: VitestRunner): Promise<void> {
                 'Test function is not found. Did you add it using `setFn`?',
               )
             }
-            await $('test.callback', () => limitMaxConcurrency(() => fn()))
+            const stackTraceError = getTaskTimeoutStackTrace(test)
+            await $('test.callback', () => limitMaxConcurrency(() => withTestTimeout(
+              () => fn(),
+              test.context,
+              test.timeout,
+              stackTraceError,
+              (_, error) => abortIfTimeout([test.context], error),
+            )()))
           }
 
           await runner.onAfterTryTask?.(test, {

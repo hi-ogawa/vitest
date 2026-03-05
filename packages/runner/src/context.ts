@@ -18,6 +18,15 @@ const now = globalThis.performance
   ? globalThis.performance.now.bind(globalThis.performance)
   : Date.now
 
+interface TimeoutController {
+  setTimeout: (timeout: number) => void
+}
+
+interface TestTimeoutState {
+  activeController?: TimeoutController
+  plannedTimeout?: number
+}
+
 export const collectorContext: RuntimeContext = {
   tasks: [],
   currentSuite: null,
@@ -137,6 +146,26 @@ export function withCancel<T extends (...args: any[]) => any>(
 }
 
 const abortControllers = new WeakMap<TestContext, AbortController>()
+const testTimeoutState = new WeakMap<TestContext, TestTimeoutState>()
+
+function getTestTimeoutState(context: TestContext): TestTimeoutState {
+  let state = testTimeoutState.get(context)
+  if (!state) {
+    state = {}
+    testTimeoutState.set(context, state)
+  }
+  return state
+}
+
+function applyCurrentTaskTimeout(runner: VitestRunner, startTime: number, timeout: number): void {
+  runner._currentTaskStartTime = startTime
+  runner._currentTaskTimeout = timeout
+}
+
+function clearCurrentTaskTimeout(runner: VitestRunner): void {
+  runner._currentTaskStartTime = undefined
+  runner._currentTaskTimeout = undefined
+}
 
 export function abortIfTimeout([context]: [TestContext?, unknown?], error: Error): void {
   if (context) {
@@ -147,6 +176,133 @@ export function abortIfTimeout([context]: [TestContext?, unknown?], error: Error
 export function abortContextSignal(context: TestContext, error: Error): void {
   const abortController = abortControllers.get(context)
   abortController?.abort(error)
+}
+
+export function withTestTimeout<T extends (...args: any[]) => any>(
+  fn: T,
+  context: TestContext,
+  timeout: number,
+  stackTraceError?: Error,
+  onTimeout?: (args: T extends (...args: infer A) => any ? A : never, error: Error) => void,
+): T {
+  const { setTimeout, clearTimeout } = getSafeTimers()
+
+  // this function name is used to filter error in test/cli/test/fails.test.ts
+  return (function runWithTimeout(...args: T extends (...args: infer A) => any ? A : never) {
+    const startTime = now()
+    const runner = getRunner()
+    const state = getTestTimeoutState(context)
+    let currentTimeout = state.plannedTimeout ?? timeout
+    state.plannedTimeout = undefined
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let settled = false
+
+    function clearTimer() {
+      if (timer) {
+        clearTimeout(timer)
+        timer = undefined
+      }
+    }
+
+    function createTimeoutError() {
+      return makeTimeoutError(false, currentTimeout, stackTraceError)
+    }
+
+    function rejectTimeoutError(reject: (reason?: unknown) => void) {
+      if (settled) {
+        return
+      }
+      settled = true
+      clearCurrentTaskTimeout(runner)
+      clearTimer()
+      const error = createTimeoutError()
+      onTimeout?.(args, error)
+      reject(error)
+    }
+
+    function scheduleTimeout(reject: (reason?: unknown) => void): void {
+      if (settled) {
+        return
+      }
+
+      clearTimer()
+      applyCurrentTaskTimeout(runner, startTime, currentTimeout)
+
+      if (currentTimeout <= 0 || currentTimeout === Number.POSITIVE_INFINITY) {
+        return
+      }
+
+      const elapsed = now() - startTime
+      const remaining = currentTimeout - elapsed
+      if (remaining <= 0) {
+        rejectTimeoutError(reject)
+        return
+      }
+
+      timer = setTimeout(() => rejectTimeoutError(reject), remaining)
+      // `unref` might not exist in browser
+      timer.unref?.()
+    }
+
+    return new Promise((resolve_, reject_) => {
+      state.activeController = {
+        setTimeout(nextTimeout) {
+          currentTimeout = nextTimeout
+          scheduleTimeout(reject_)
+        },
+      }
+
+      scheduleTimeout(reject_)
+
+      function resolve(result: unknown) {
+        if (settled) {
+          return
+        }
+        settled = true
+        state.activeController = undefined
+        clearCurrentTaskTimeout(runner)
+        clearTimer()
+        if (
+          currentTimeout > 0
+          && currentTimeout !== Number.POSITIVE_INFINITY
+          && now() - startTime >= currentTimeout
+        ) {
+          const error = createTimeoutError()
+          onTimeout?.(args, error)
+          reject_(error)
+          return
+        }
+        resolve_(result)
+      }
+
+      function reject(error: unknown) {
+        if (settled) {
+          return
+        }
+        settled = true
+        state.activeController = undefined
+        clearCurrentTaskTimeout(runner)
+        clearTimer()
+        reject_(error)
+      }
+
+      // sync test will be caught by try/catch
+      try {
+        const result = fn(...args) as PromiseLike<unknown>
+        if (typeof result === 'object' && result != null && typeof result.then === 'function') {
+          result.then(resolve, reject)
+        }
+        else {
+          resolve(result)
+        }
+      }
+      catch (error) {
+        reject(error)
+      }
+    }).finally(() => {
+      state.activeController = undefined
+    })
+  }) as T
 }
 
 export function createTestContext(
@@ -166,6 +322,16 @@ export function createTestContext(
 
   context.signal = abortController.signal
   context.task = test
+
+  context.setTimeout = (timeout: number) => {
+    test.timeout = timeout
+    const timeoutState = getTestTimeoutState(context)
+    if (timeoutState.activeController) {
+      timeoutState.activeController.setTimeout(timeout)
+      return
+    }
+    timeoutState.plannedTimeout = timeout
+  }
 
   context.skip = (condition?: boolean | string, note?: string): never => {
     if (condition === false) {

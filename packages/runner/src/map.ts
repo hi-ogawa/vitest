@@ -6,6 +6,7 @@ import type { Suite, SuiteHooks, Test, TestContext } from './types/tasks'
 const fnMap = new WeakMap()
 const testFixtureMap = new WeakMap()
 const hooksMap = new WeakMap()
+const timeoutStackMap = new WeakMap()
 
 export function setFn(key: Test, fn: () => Awaitable<void>): void {
   fnMap.set(key, fn)
@@ -32,4 +33,12 @@ export function setHooks(key: Suite, hooks: SuiteHooks): void {
 
 export function getHooks(key: Suite): SuiteHooks {
   return hooksMap.get(key)
+}
+
+export function setTaskTimeoutStackTrace(key: Test, error: Error): void {
+  timeoutStackMap.set(key, error)
+}
+
+export function getTaskTimeoutStackTrace<Task = Test>(key: Task): Error | undefined {
+  return timeoutStackMap.get(key as any)
 }

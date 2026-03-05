@@ -1215,6 +1215,13 @@ export interface TestContext {
   readonly onTestFinished: (fn: OnTestFinishedHandler, timeout?: number) => void
 
   /**
+   * Change the current test timeout in milliseconds.
+   * If called outside of test execution (for example in a setup hook),
+   * the value will be applied when the test body starts running.
+   */
+  readonly setTimeout: (timeout: number) => void
+
+  /**
    * Mark tests as skipped. All execution after this call will be skipped.
    * This function throws an error, so make sure you are not catching it accidentally.
    * @see {@link https://vitest.dev/guide/test-context#skip}

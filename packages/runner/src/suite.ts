@@ -27,17 +27,15 @@ import {
   unique,
 } from '@vitest/utils/helpers'
 import {
-  abortIfTimeout,
   collectorContext,
   collectTask,
   createTestContext,
   runWithSuite,
   withCancel,
-  withTimeout,
 } from './context'
 import { configureProps, TestFixtures, withFixtures } from './fixture'
 import { afterAll, afterEach, aroundAll, aroundEach, beforeAll, beforeEach } from './hooks'
-import { getHooks, setFn, setHooks, setTestFixture } from './map'
+import { getHooks, setFn, setHooks, setTaskTimeoutStackTrace, setTestFixture } from './map'
 import { getCurrentTest } from './test-state'
 import { findTestFileStackTrace } from './utils'
 import { createChainable, getChainableContext } from './utils/chain'
@@ -410,15 +408,10 @@ function createSuiteCollector(
     Error.stackTraceLimit = limit
 
     if (handler) {
+      setTaskTimeoutStackTrace(task, stackTraceError)
       setFn(
         task,
-        withTimeout(
-          withCancel(withAwaitAsyncAssertions(withFixtures(handler, { context }), task), task.context.signal),
-          timeout,
-          false,
-          stackTraceError,
-          (_, error) => abortIfTimeout([context], error),
-        ),
+        withCancel(withAwaitAsyncAssertions(withFixtures(handler, { context }), task), task.context.signal),
       )
     }
 
