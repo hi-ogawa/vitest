@@ -1047,6 +1047,9 @@ importers:
       expect-type:
         specifier: ^1.3.0
         version: 1.3.0
+      istanbul-lib-report:
+        specifier: ^3.0.1
+        version: 3.0.1
       magic-string:
         specifier: 'catalog:'
         version: 0.30.21
@@ -1105,6 +1108,9 @@ importers:
       '@types/istanbul-lib-coverage':
         specifier: 'catalog:'
         version: 2.0.6
+      '@types/istanbul-lib-report':
+        specifier: 'catalog:'
+        version: 3.0.3
       '@types/istanbul-reports':
         specifier: 'catalog:'
         version: 3.0.4

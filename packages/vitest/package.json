@@ -141,6 +141,7 @@
     "@vitest/browser-webdriverio": "workspace:*",
     "@vitest/ui": "workspace:*",
     "happy-dom": "*",
+    "istanbul-lib-report": "^3.0.1",
     "jsdom": "*",
     "vite": "^6.0.0 || ^7.0.0 || ^8.0.0"
   },
@@ -167,6 +168,9 @@
       "optional": true
     },
     "happy-dom": {
+      "optional": true
+    },
+    "istanbul-lib-report": {
       "optional": true
     },
     "jsdom": {
@@ -207,6 +211,7 @@
     "@sinonjs/fake-timers": "15.0.0",
     "@types/estree": "catalog:",
     "@types/istanbul-lib-coverage": "catalog:",
+    "@types/istanbul-lib-report": "catalog:",
     "@types/istanbul-reports": "catalog:",
     "@types/jsdom": "^27.0.0",
     "@types/node": "^24.12.0",

@@ -23,6 +23,7 @@ import {
   defaultPort,
 } from '../../constants'
 import { benchmarkConfigDefaults, configDefaults } from '../../defaults'
+import { distDir } from '../../paths'
 import { isAgent, isCI, stdProvider } from '../../utils/env'
 import { getWorkersCountByPercentage } from '../../utils/workers'
 import { BaseSequencer } from '../sequencers/BaseSequencer'
@@ -428,6 +429,11 @@ export function resolveConfig(
   }
 
   resolved.coverage.reporter = resolveCoverageReporters(resolved.coverage.reporter)
+  for (const reporter of resolved.coverage.reporter) {
+    if ((isAgent && reporter[0] === 'text') || reporter[0] === 'text-agent') {
+      reporter[0] = join(distDir, 'coverage-text-agent.cjs')
+    }
+  }
   if (resolved.coverage.changed === undefined && resolved.changed !== undefined) {
     resolved.coverage.changed = resolved.changed
   }
@@ -969,6 +975,8 @@ export function resolveConfig(
 export function isBrowserEnabled(config: ResolvedConfig): boolean {
   return Boolean(config.browser?.enabled)
 }
+
+export const textAgentCoverageReporterPath: string = join(distDir, 'coverage-text-agent.cjs')
 
 export function resolveCoverageReporters(configReporters: NonNullable<CoverageOptions['reporter']>): CoverageReporterWithOptions[] {
   // E.g. { reporter: "html" }

@@ -159,6 +159,18 @@ export default ({ watch }) =>
       plugins,
     },
     {
+      input: 'src/node/coverage-text-agent.ts',
+      output: [
+        {
+          file: 'dist/coverage-text-agent.cjs',
+          format: 'cjs',
+          exports: 'default',
+        },
+      ],
+      external,
+      plugins,
+    },
+    {
       input: dtsUtils.dtsInput(dtsEntries),
       output: {
         dir: 'dist',

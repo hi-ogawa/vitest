@@ -15,7 +15,7 @@ import pm from 'picomatch'
 import { glob } from 'tinyglobby'
 import c from 'tinyrainbow'
 import { coverageConfigDefaults } from '../defaults'
-import { resolveCoverageReporters } from '../node/config/resolveConfig'
+import { resolveCoverageReporters, textAgentCoverageReporterPath } from '../node/config/resolveConfig'
 import { resolveCoverageProviderModule } from '../utils/coverage'
 
 type Threshold = 'lines' | 'functions' | 'statements' | 'branches'
@@ -639,7 +639,8 @@ export class BaseCoverageProvider {
         reporter === 'text'
         || reporter === 'text-summary'
         || reporter === 'text-lcov'
-        || reporter === 'teamcity',
+        || reporter === 'teamcity'
+        || reporter === textAgentCoverageReporterPath,
     )
   }
 
