@@ -35,6 +35,7 @@ export interface SnapshotMatchOptions {
   error?: Error
   rawSnapshot?: RawSnapshotInfo
   assertionName?: string
+  argumentIndex?: number
 }
 
 export interface ProcessDomainSnapshotOptions {
@@ -47,6 +48,7 @@ export interface ProcessDomainSnapshotOptions {
   // for finding assertion callsite by probing stacktrace
   assertionName?: string
   error?: Error
+  argumentIndex?: number
 }
 
 export interface SnapshotResult {

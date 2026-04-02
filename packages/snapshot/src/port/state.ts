@@ -217,7 +217,13 @@ export default class SnapshotState {
   private _addSnapshot(
     key: string,
     receivedSerialized: string,
-    options: { rawSnapshot?: RawSnapshotInfo; stack?: ParsedStack; testId: string; assertionName?: string },
+    options: {
+      rawSnapshot?: RawSnapshotInfo
+      stack?: ParsedStack
+      testId: string
+      assertionName?: string
+      argumentIndex?: number
+    },
   ): void {
     this._dirty = true
     if (options.stack) {
@@ -226,6 +232,7 @@ export default class SnapshotState {
         snapshot: receivedSerialized,
         testId: options.testId,
         assertionName: options.assertionName,
+        argumentIndex: options.argumentIndex,
       })
     }
     else if (options.rawSnapshot) {
@@ -311,6 +318,7 @@ export default class SnapshotState {
     stack?: ParsedStack
     rawSnapshot?: RawSnapshotInfo
     assertionName?: string
+    argumentIndex?: number
   }): SnapshotReturnOptions {
     // These are the conditions on when to write snapshots:
     //  * There's no snapshot file in a non-CI environment.
@@ -337,6 +345,7 @@ export default class SnapshotState {
             testId: opts.testId,
             rawSnapshot: opts.rawSnapshot,
             assertionName: opts.assertionName,
+            argumentIndex: opts.argumentIndex,
           })
         }
         else {
@@ -349,6 +358,7 @@ export default class SnapshotState {
           testId: opts.testId,
           rawSnapshot: opts.rawSnapshot,
           assertionName: opts.assertionName,
+          argumentIndex: opts.argumentIndex,
         })
         this.added.increment(opts.testId)
       }
@@ -470,6 +480,7 @@ export default class SnapshotState {
     error,
     rawSnapshot,
     assertionName,
+    argumentIndex,
   }: SnapshotMatchOptions): SnapshotReturnOptions {
     const resolved = this._resolveKey(testId, testName, key)
     key = resolved.key
@@ -549,6 +560,7 @@ export default class SnapshotState {
       stack,
       rawSnapshot,
       assertionName,
+      argumentIndex,
     })
   }
 
@@ -560,6 +572,7 @@ export default class SnapshotState {
     isInline,
     error,
     assertionName,
+    argumentIndex,
   }: ProcessDomainSnapshotOptions): SnapshotReturnOptions {
     const stack = isInline
       ? this._resolveInlineStack({
@@ -585,6 +598,7 @@ export default class SnapshotState {
         : undefined,
       stack,
       assertionName,
+      argumentIndex,
     })
   }
 

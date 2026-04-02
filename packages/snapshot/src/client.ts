@@ -50,6 +50,7 @@ interface AssertOptions {
   errorMessage?: string
   rawSnapshot?: RawSnapshotInfo
   assertionName?: string
+  argumentIndex?: number
 }
 
 interface AssertDomainOptions extends Omit<AssertOptions, 'received'> {
@@ -133,6 +134,7 @@ export class SnapshotClient {
       errorMessage,
       rawSnapshot,
       assertionName,
+      argumentIndex,
     } = options
     let { received } = options
 
@@ -188,6 +190,7 @@ export class SnapshotClient {
       inlineSnapshot,
       rawSnapshot,
       assertionName,
+      argumentIndex,
     })
 
     return {
@@ -252,6 +255,7 @@ export class SnapshotClient {
       isInline,
       error,
       assertionName: options.assertionName,
+      argumentIndex: options.argumentIndex,
     })
 
     return {
@@ -333,6 +337,7 @@ export class SnapshotClient {
       isInline,
       error,
       assertionName: options.assertionName,
+      argumentIndex: options.argumentIndex,
     })
 
     return {

@@ -18,6 +18,7 @@ export interface InlineSnapshot {
   // but for now, we ask higher level assertion to pass it explicitly
   // since this is useful for certain error messages before we extract stack.
   assertionName?: string
+  argumentIndex?: number
 }
 
 export async function saveInlineSnapshots(
@@ -38,7 +39,10 @@ export async function saveInlineSnapshots(
 
       for (const snap of snaps) {
         const index = positionToOffset(code, snap.line, snap.column)
-        replaceInlineSnap(code, s, index, snap.snapshot, snap.assertionName)
+        replaceInlineSnap(code, s, index, snap.snapshot, {
+          assertionName: snap.assertionName,
+          argumentIndex: snap.argumentIndex,
+        })
       }
 
       const transformed = s.toString()
@@ -175,8 +179,20 @@ export function replaceInlineSnap(
   s: MagicString,
   currentIndex: number,
   newSnap: string,
-  assertionName?: string,
+  options?: {
+    assertionName?: string
+    argumentIndex?: number
+  },
 ): boolean {
+  const assertionName = options?.assertionName
+  const argumentIndex = options?.argumentIndex
+  if (argumentIndex !== undefined) {
+    return replaceIndexedInlineSnap(code, s, currentIndex, newSnap, {
+      assertionName,
+      argumentIndex,
+    })
+  }
+
   const methodNames = assertionName ? [assertionName] : defaultMethodNames
   const { code: codeStartingAtIndex, index } = getCodeStartingAtIndex(code, currentIndex, methodNames)
 
@@ -208,6 +224,134 @@ export function replaceInlineSnap(
   s.overwrite(startIndex - 1, endIndex, snapString)
 
   return true
+}
+
+function replaceIndexedInlineSnap(
+  code: string,
+  s: MagicString,
+  currentIndex: number,
+  newSnap: string,
+  options: {
+    assertionName?: string
+    argumentIndex: number
+  },
+): boolean {
+  const { assertionName, argumentIndex } = options
+  // Indexed rewrites are currently only used for the domain-first shape:
+  //   matcher('domain')
+  //   matcher('domain', `snapshot`)
+  // where the snapshot is always the 2nd argument
+  if (argumentIndex !== 1) {
+    return false
+  }
+
+  const methodNames = assertionName ? [assertionName] : defaultMethodNames
+  const { code: codeStartingAtIndex, index } = getCodeStartingAtIndex(code, currentIndex, methodNames)
+  const keywordRegex = assertionName ? new RegExp(escapeRegExp(assertionName)) : /toMatchInlineSnapshot|toThrowErrorMatchingInlineSnapshot/
+  const firstKeywordMatch = keywordRegex.exec(codeStartingAtIndex)
+  if (!firstKeywordMatch) {
+    return false
+  }
+
+  const callCode = codeStartingAtIndex.slice(firstKeywordMatch.index)
+  const callEnd = getCallLastIndex(callCode)
+  if (callEnd === null) {
+    return false
+  }
+
+  const openParenOffset = callCode.indexOf('(')
+  if (openParenOffset === -1 || openParenOffset > callEnd) {
+    return false
+  }
+
+  const callStart = index + firstKeywordMatch.index
+  const openParenIndex = callStart + openParenOffset
+  const closeParenIndex = callStart + callEnd
+  const snapString = prepareSnapString(newSnap, code, index)
+  let cursor = openParenIndex + 1
+
+  cursor = skipInlineSnapshotTrivia(code, cursor, closeParenIndex)
+  if (cursor >= closeParenIndex) {
+    return false
+  }
+
+  const domain = parseQuotedStringLiteral(code, cursor, closeParenIndex)
+  if (!domain) {
+    return false
+  }
+  if (!/^\w+$/.test(code.slice(domain.start + 1, domain.end - 1))) {
+    return false
+  }
+
+  cursor = skipInlineSnapshotTrivia(code, domain.end, closeParenIndex)
+  if (cursor >= closeParenIndex) {
+    s.appendLeft(closeParenIndex, `, ${snapString}`)
+    return true
+  }
+  if (code[cursor] !== ',') {
+    return false
+  }
+  cursor++
+
+  cursor = skipInlineSnapshotTrivia(code, cursor, closeParenIndex)
+  if (cursor >= closeParenIndex) {
+    s.appendLeft(closeParenIndex, ` ${snapString}`)
+    return true
+  }
+
+  const target = parseQuotedStringLiteral(code, cursor, closeParenIndex)
+  if (!target) {
+    return false
+  }
+  s.overwrite(target.start, target.end, snapString)
+  return true
+}
+
+function skipInlineSnapshotTrivia(code: string, cursor: number, end: number): number {
+  while (cursor < end) {
+    const char = code[cursor]
+    if (/\s/.test(char)) {
+      cursor++
+      continue
+    }
+    if (code.startsWith('/*', cursor)) {
+      const close = code.indexOf('*/', cursor + 2)
+      return close === -1 ? end : skipInlineSnapshotTrivia(code, close + 2, end)
+    }
+    if (code.startsWith('//', cursor)) {
+      let close = cursor + 2
+      while (close < end && !/[\n\r\u2028\u2029]/.test(code[close])) {
+        close++
+      }
+      cursor = close
+      continue
+    }
+    break
+  }
+  return cursor
+}
+
+function parseQuotedStringLiteral(code: string, start: number, end: number) {
+  const quote = code[start]
+  if (quote !== '\'' && quote !== '"' && quote !== '`') {
+    return null
+  }
+  let cursor = start + 1
+  while (cursor < end) {
+    const char = code[cursor]
+    if (char === '\\') {
+      cursor += 2
+      continue
+    }
+    if (char === quote) {
+      return {
+        start,
+        end: cursor + 1,
+      }
+    }
+    cursor++
+  }
+  return null
 }
 
 const INDENTATION_REGEX = /^([^\S\n]*)\S/m
