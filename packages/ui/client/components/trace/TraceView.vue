@@ -1,11 +1,20 @@
 <script setup lang="ts">
+import type { NestedTreeNode, NestedTreeNodeAttributes } from '~/components/tree/types'
 import type { NormalizedBrowserTraceData, NormalizedBrowserTraceEntry, TraceSelection } from '~/composables/trace-view'
 import { createCache, createMirror, rebuild } from 'rrweb-snapshot'
 // @ts-expect-error missing types
 import { Pane, Splitpanes } from 'splitpanes'
 import { computed, ref, watch } from 'vue'
+import NestedTree from '~/components/tree/NestedTree.vue'
 import { openLocation } from '~/composables/location'
 import { getTraceEntryClass, selectActiveTraceStep } from '~/composables/trace-view'
+
+interface TraceTreeData {
+  step: NormalizedBrowserTraceEntry
+  stepIndex: number
+}
+
+type TraceTreeNode = NestedTreeNode<TraceTreeData>
 
 const props = defineProps<{
   trace: NormalizedBrowserTraceData
@@ -14,6 +23,7 @@ const props = defineProps<{
 
 const entries = computed(() => props.trace.entries)
 const selectedStep = computed(() => entries.value[props.selection.selectedStepIndex])
+const tree = computed(() => buildTraceTree(entries.value))
 
 const iframeEl = ref<HTMLIFrameElement>()
 const iframeSandbox = computed(() => {
@@ -27,6 +37,46 @@ function onSelectStep(index: number) {
   const step = entries.value[index]
   if (step?.location) {
     openLocation(props.selection.test, step.location)
+  }
+}
+
+function buildTraceTree(entries: NormalizedBrowserTraceEntry[]): TraceTreeNode[] {
+  const roots: TraceTreeNode[] = []
+  const parents: TraceTreeNode[] = []
+
+  for (const [stepIndex, step] of entries.entries()) {
+    const node: TraceTreeNode = {
+      id: stepIndex,
+      data: {
+        step,
+        stepIndex,
+      },
+      children: [],
+    }
+
+    parents.length = step.depth
+    const parent = parents[step.depth - 1]
+    if (parent) {
+      parent.children.push(node)
+    }
+    else {
+      roots.push(node)
+    }
+    parents.push(node)
+  }
+
+  return roots
+}
+
+function getTraceNodeClass(node: TraceTreeNode) {
+  return getStepButtonClass(node.data.step, node.data.stepIndex)
+}
+
+function getTraceNodeAttrs(node: TraceTreeNode): NestedTreeNodeAttributes {
+  return {
+    'data-testid': 'trace-step',
+    'data-test-range': node.data.step.range?.phase,
+    'aria-current': props.selection.selectedStepIndex === node.data.stepIndex ? 'step' : undefined,
   }
 }
 
@@ -143,52 +193,42 @@ function isTraceStepInProgress(step: NormalizedBrowserTraceEntry) {
   >
     <Pane :size="30" min-size="20">
       <div class="h-full min-h-0 p-4" flex="~ col gap-1" overflow-auto>
-        <button
-          v-for="(step, index) of entries"
-          :key="index"
-          type="button"
-          data-testid="trace-step"
-          :data-test-range="step.range?.phase"
-          class="relative w-full text-left px-2 py-1 rounded text-sm"
-          :class="getStepButtonClass(step, index)"
-          :style="{ paddingInlineStart: `${0.5 + step.depth}rem` }"
-          :aria-current="selection.selectedStepIndex === index ? 'step' : undefined"
-          @click="onSelectStep(index)"
+        <NestedTree
+          :nodes="tree"
+          :selected-id="selection.selectedStepIndex"
+          :get-node-class="getTraceNodeClass"
+          :get-node-attrs="getTraceNodeAttrs"
+          @select="onSelectStep($event as number)"
         >
-          <span
-            v-if="step.depth > 0"
-            class="absolute bottom-1 top-1 border-l border-gray/40 dark:border-gray/50"
-            :style="{ insetInlineStart: `${step.depth - 0.05}rem` }"
-          />
-          <div class="flex items-start gap-2">
+          <template #default="{ node }">
             <span class="mt-0.5 h-4 w-4 flex flex-shrink-0 items-center justify-center">
               <span
-                v-if="isTraceStepInProgress(step)"
+                v-if="isTraceStepInProgress(node.data.step)"
                 class="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent"
-                :class="getTraceEntryClass(step)"
+                :class="getTraceEntryClass(node.data.step)"
               />
               <span
                 v-else
                 class="h-2 w-2 rounded-full bg-current opacity-80"
-                :class="getTraceEntryClass(step)"
+                :class="getTraceEntryClass(node.data.step)"
               />
             </span>
             <div class="min-w-0 flex-1">
               <div truncate data-testid="trace-step-name">
-                {{ formatStepName(step) }}
+                {{ formatStepName(node.data.step) }}
               </div>
               <div class="text-xs opacity-60 truncate">
-                {{ formatTraceTiming(step) }}
+                {{ formatTraceTiming(node.data.step) }}
               </div>
               <div
-                v-if="step.element"
+                v-if="node.data.step.element"
                 class="font-mono text-xs opacity-70 truncate"
               >
-                {{ step.element.locator }}
+                {{ node.data.step.element.locator }}
               </div>
             </div>
-          </div>
-        </button>
+          </template>
+        </NestedTree>
       </div>
     </Pane>
     <Pane :size="70" min-size="20">
