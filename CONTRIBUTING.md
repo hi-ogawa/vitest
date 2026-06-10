@@ -161,6 +161,16 @@ The release branches are also linked with the documentation site releases:
 - `release` points to the latest stable release line used for <https://vitest.dev/>. Release managers update it manually for non-beta releases from `main`; it is not moved for older-line backports.
 - `vN` branches are used for old major documentation sites. For example, <https://v3.vitest.dev/> uses `v3`.
 
+### Release process
+
+Releases — publishing the npm packages, creating the git release tag, and generating the associated GitHub release — are driven by a pull request and carried out by GitHub Actions, not from a maintainer's machine. The release PR holds the version bump, and merging it kicks off the actual publish.
+
+1. **Prepare the release PR.** Run the `Prepare Publish` workflow, setting the `target_branch` input to the branch that matches the [release branch](#release-branches) convention for the release line, then choose the `release` or `version` input to control the version bump. The default input is `release: next`, which bumps the version to the next patch version for stable releases (e.g. `4.1.2 -> 4.1.3`), or the next prerelease version when the current version is already a prerelease (e.g. `4.2.0-beta.2 -> 4.2.0-beta.3`). Use `release: conventional` to derive the bump from the commit history, set `release` to a specific bump type, or pass an exact `version` for pre-releases. To preview the version a given `release` input resolves to, you can run `pnpm release` locally first — it lists the commits since the last release and lets you browse available release types and versions interactively (cancel before confirming so nothing is committed). The workflow pushes the version bump to a branch and prints a compare URL; open that URL to create the release PR.
+
+2. **Review and merge.** Review the version bump, then merge the PR so the `chore: release v*` commit lands on the release branch — that commit is what triggers the Publish step.
+
+3. **Publish.** The release commit starts the `Publish Package` workflow, which pauses for a maintainer to approve the `Release` environment. Once approved, it builds and publishes the packages to npm, pushes the release tag, and generates the GitHub release. Approve when prompted, then confirm npm, the tag, and the GitHub release all look right.
+
 ### Issue Triaging Workflow
 
 ```mermaid
