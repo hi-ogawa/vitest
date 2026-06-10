@@ -16,6 +16,7 @@ async function main() {
     commit: true,
     tag: false,
     push: false,
+    printCommits: false,
     confirm: !release,
   })
 }
