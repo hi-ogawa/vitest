@@ -15,7 +15,7 @@ jobs:
   # Keep detection outside the Release environment. Environment approval is job-level,
   # so the publish job is only created after a release commit is detected.
   detect:
-    if: github.repository == 'hi-ogawa/vitest'
+    if: github.repository == 'vitest-dev/vitest'
     name: Detect release commit
     runs-on: ubuntu-latest
     outputs:
@@ -94,20 +94,31 @@ jobs:
       - name: Publish to npm (dry run)
         env:
           VERSION: ${{ needs.detect.outputs.version }}
+          PUBLISH_BRANCH: ${{ github.ref_name }}
           PUBLISH_DRY_RUN: 'true'
         run: pnpm run publish-ci "$VERSION"
 
       - name: Publish to npm
         env:
           VERSION: ${{ needs.detect.outputs.version }}
-        run: echo "would publish $VERSION"
+          PUBLISH_BRANCH: ${{ github.ref_name }}
+        run: pnpm run publish-ci "$VERSION"
 
       - name: Push release tag
         env:
           VERSION: ${{ needs.detect.outputs.version }}
-        run: echo "would push v$VERSION"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v$VERSION"
+          git config user.name "vitest-release-bot"
+          git config user.email "actions@github.com"
+          git tag "$TAG" "$GITHUB_SHA"
+          git push "https://x-access-token:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git" "$TAG"
 
       - name: Generate Changelog
         env:
           VERSION: ${{ needs.detect.outputs.version }}
-        run: echo "would generate changelog for v$VERSION"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v$VERSION"
+          npx changelogithub --to "$TAG" --name "$TAG"
