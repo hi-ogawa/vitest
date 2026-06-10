@@ -1,22 +1,25 @@
-#!/usr/bin/env zx
-
 import { versionBump } from 'bumpp'
 import { glob } from 'tinyglobby'
 
-try {
-  const packages = await glob(['package.json', './packages/*/package.json'], { expandDirectories: false })
+async function main() {
+  const packages = await glob(['package.json', './packages/*/package.json'], {
+    expandDirectories: false,
+  })
 
   console.log('Bumping versions in packages:', packages.join(', '), '\n')
 
+  const release = process.env.RELEASE_VERSION || process.env.RELEASE_TYPE
+
   await versionBump({
     files: packages,
-    commit: true,
-    push: true,
-    tag: true,
+    release,
+    tag: false,
+    push: false,
+    confirm: !release,
   })
+}
 
-  console.log('New release is ready, waiting for conformation at https://github.com/vitest-dev/vitest/actions')
-}
-catch (err) {
-  console.error(err)
-}
+main().catch((error) => {
+  console.error('Error during version bump:', error)
+  process.exit(1)
+})

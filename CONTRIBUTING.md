@@ -118,6 +118,59 @@ These measures help reduce maintenance burden and keep the team's work efficient
 
 > The following section is mostly for maintainers who have commit access, but it's helpful to go through if you intend to make non-trivial contributions to the codebase.
 
+### Release Branches
+
+Public support ranges are documented in [Releases](./docs/releases.md). This section describes how maintainers map those ranges to Git branches for releases and backports. These names refer to branches, not release tags; release tags always include the full version, for example `v4.1.8`.
+
+- `main` is the active development branch for the next release line.
+- `vN` is the latest maintained minor line for non-main major version `N`.
+- `vN.M` is an older minor line for major version `N`, kept when that exact minor still needs releases or backports.
+
+As a hypothetical example, if `v5.1.2` is the latest Vitest release, and the latest releases for older majors are `v4.1.7` and `v3.2.4`, the branch shape can be:
+
+- `main` is the active development branch for `5.1.x`.
+- `v5.0` is an older minor line for Vitest 5.
+- `v4` is the latest maintained minor line for Vitest 4, so it is the `4.1.x` line.
+- `v4.0` is an older minor line for Vitest 4.
+- `v3` is the latest maintained minor line for Vitest 3, so it is the `3.2.x` line.
+- `v3.1` and `v3.0` are older minor lines for Vitest 3.
+
+The `v5` branch does not exist yet. It will be created from the latest v5 minor only after `main` moves on to a newer release line, such as `6.0.0` or often `6.0.0-beta.x`.
+
+For backports, first use the public support policy to decide which version ranges are supported, then map them to branches:
+
+- Changes can land as usual on the `main` branch first.
+- If the fix targets the latest maintained minor of major version `N`, target `vN`. This is the default backport target for a supported non-main major.
+- If the fix also needs an older maintained minor `N.M`, target `vN.M`.
+
+For example, using the hypothetical `v5.1.2` release above, the public support policy covers regular fixes for `5.1.x` and important fixes or security patches for `5.0.x` and `4.1.x`:
+
+- fixes for `5.1.x` target `main`
+- backports to `5.0.x` target `v5.0`
+- backports to `4.1.x` target `v4`
+
+No backport is made to `v3` unless the support policy changes or maintainers decide on an explicit exception.
+
+Backport PR titles should include the target branch in a `[backport to x]` marker, for example `fix: [backport to v5.0] ...` or `fix: [backport to v4] ...`. Branch names never include patch versions.
+
+#### Documentation Branches
+
+The release branches are also linked with the documentation site releases:
+
+- `main` is the source for unreleased documentation at <https://main.vitest.dev/>.
+- `release` points to the latest stable release line used for <https://vitest.dev/>. Release managers update it manually for non-beta releases from `main`; it is not moved for older-line backports.
+- `vN` branches are used for old major documentation sites. For example, <https://v3.vitest.dev/> uses `v3`.
+
+### Release process
+
+Releases — publishing the npm packages, creating the git release tag, and generating the associated GitHub release — are driven by a pull request and carried out by GitHub Actions, not from a maintainer's machine. The release PR holds the version bump, and merging it kicks off the actual publish.
+
+1. **Prepare the release PR.** Run the `Prepare Publish` workflow, setting the `target_branch` input to the branch that matches the [release branch](#release-branches) convention for the release line, then choose the `release` or `version` input to control the version bump. The default input is `release: next`, which bumps the version to the next patch version for stable releases (e.g. `4.1.2 -> 4.1.3`), or the next prerelease version when the current version is already a prerelease (e.g. `4.2.0-beta.2 -> 4.2.0-beta.3`). Use `release: conventional` to derive the bump from the commit history, set `release` to a specific bump type, or pass an exact `version` for pre-releases. To preview the version a given `release` input resolves to, you can run `pnpm release` locally first — it lists the commits since the last release and lets you browse available release types and versions interactively (cancel before confirming so nothing is committed). The workflow pushes the version bump to a branch and prints a compare URL; open that URL to create the release PR.
+
+2. **Review and merge.** Review the version bump, then merge the PR so the `chore: release v*` commit lands on the release branch — that commit is what triggers the Publish step.
+
+3. **Publish.** The release commit starts the `Publish Package` workflow, which pauses for a maintainer to approve the `Release` environment. Once approved, it builds and publishes the packages to npm, pushes the release tag, and generates the GitHub release. Approve when prompted, then confirm npm, the tag, and the GitHub release all look right.
+
 ### Issue Triaging Workflow
 
 ```mermaid
