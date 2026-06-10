@@ -1,5 +1,3 @@
-#!/usr/bin/env zx
-
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { $ } from 'zx'
@@ -38,10 +36,10 @@ const dryRunArgs = dryRun ? ['--dry-run'] : []
 console.log(dryRun ? 'Dry-running version' : 'Publishing version', version, 'with tag', releaseTag || 'latest')
 
 if (releaseTag) {
-  await $`pnpm -r publish --access public --no-git-checks --tag ${releaseTag} ${dryRunArgs}`
+  await $`pnpm -r publish --access public --no-git-checks --tag ${releaseTag} ${dryRunArgs}`.stdio('inherit')
 }
 else {
   // TODO: make stable backport releases use branch-aware npm dist-tags instead of
   // falling through to `latest`, for example vN -> VN and vN.M -> VN_M.
-  await $`pnpm -r publish --access public --no-git-checks ${dryRunArgs}`
+  await $`pnpm -r publish --access public --no-git-checks ${dryRunArgs}`.stdio('inherit')
 }
