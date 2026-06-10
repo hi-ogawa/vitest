@@ -1,43 +1,92 @@
-#!/usr/bin/env zx
-
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { $ } from 'zx'
 
-if (process.env.VITEST_GENERATE_UI_TOKEN !== 'true' || process.env.VITE_TEST_WATCHER_DEBUG !== 'false') {
-  throw new Error(`Cannot release Vitest without VITEST_GENERATE_UI_TOKEN=${process.env.VITEST_GENERATE_UI_TOKEN} and VITE_TEST_WATCHER_DEBUG=${process.env.VITE_TEST_WATCHER_DEBUG} environment variable. `)
+// Example:
+// VITEST_GENERATE_UI_TOKEN=true VITE_TEST_WATCHER_DEBUG=false PUBLISH_DRY_RUN=true PUBLISH_BRANCH=v3 pnpm publish-ci 3.2.7
+
+const $$ = $({ stdio: 'inherit' })
+
+async function main() {
+  if (process.env.VITEST_GENERATE_UI_TOKEN !== 'true' || process.env.VITE_TEST_WATCHER_DEBUG !== 'false') {
+    throw new Error(`Cannot release Vitest without VITEST_GENERATE_UI_TOKEN=${process.env.VITEST_GENERATE_UI_TOKEN} and VITE_TEST_WATCHER_DEBUG=${process.env.VITE_TEST_WATCHER_DEBUG} environment variable. `)
+  }
+
+  const version = process.argv[2]
+  if (!version) {
+    throw new Error('Missing argument to specify version')
+  }
+
+  const pkgPath = fileURLToPath(new URL('../package.json', import.meta.url))
+  const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
+  if (pkg.version !== version) {
+    throw new Error(
+      `Input version "${version}" does not match package.json version "${pkg.version}"`,
+    )
+  }
+
+  const publishBranch = process.env.PUBLISH_BRANCH
+  if (!publishBranch) {
+    throw new Error('Missing PUBLISH_BRANCH environment variable')
+  }
+  const releaseTag = await getReleaseTag(version, publishBranch)
+
+  const dryRun = process.env.PUBLISH_DRY_RUN === 'true'
+  if (dryRun) {
+    console.log('== DRY RUN ==')
+  }
+  console.log(`Publishing version '${version}' with tag '${releaseTag}'`)
+  await $$`pnpm -r publish --access public --no-git-checks --tag ${releaseTag} --filter="!vite-node" --filter="!@vitest/ws-client" ${dryRun ? ['--dry-run'] : []}`
 }
 
-let version = process.argv[2]
+async function getReleaseTag(version: string, publishBranch: string) {
+  if (version.includes('beta')) {
+    return 'beta'
+  }
+  if (version.includes('alpha')) {
+    return 'alpha'
+  }
 
-if (!version) {
-  throw new Error('No tag specified')
+  // Need to specify tag explicitly for backport version releases
+  // since otherwise `latest` tag would be overwritten.
+  // Note that `main` branch doesn't always mean `latest` tag because of pre-release phase.
+  // Use following mapping to avoid https://docs.npmjs.com/cli/v11/commands/npm-dist-tag#caveats
+  // - v3 branch -> V3 dist tag
+  // - v3.1 branch -> V3.1 dist tag
+
+  const npmView = await $`npm view vitest dist-tags --json`
+  const latestVersion = JSON.parse(npmView.stdout).latest
+  if (isGreaterStableVersion(version, latestVersion)) {
+    return 'latest'
+  }
+
+  return publishBranch.toUpperCase()
 }
 
-if (version.startsWith('v')) {
-  version = version.slice(1)
+function parseStableVersion(version: string) {
+  const match = version.match(/^(\d+)\.(\d+)\.(\d+)$/)
+
+  if (!match) {
+    throw new Error(`Cannot compare non-stable version "${version}"`)
+  }
+
+  return match.slice(1).map(Number)
 }
 
-const pkgPath = fileURLToPath(new URL('../package.json', import.meta.url))
-const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
+function isGreaterStableVersion(version: string, latestVersion: string) {
+  const current = parseStableVersion(version)
+  const latest = parseStableVersion(latestVersion)
 
-if (pkg.version !== version) {
-  throw new Error(
-    `Package version from tag "${version}" mismatches with the current version "${pkg.version}"`,
-  )
+  for (let i = 0; i < current.length; i++) {
+    if (current[i] !== latest[i]) {
+      return current[i] > latest[i]
+    }
+  }
+
+  return false
 }
 
-const releaseTag = version.includes('beta')
-  ? 'beta'
-  : version.includes('alpha')
-    ? 'alpha'
-    : undefined
-
-console.log('Publishing version', version, 'with tag', releaseTag || 'latest')
-
-if (releaseTag) {
-  await $`pnpm -r publish --access public --no-git-checks --tag ${releaseTag}`
-}
-else {
-  await $`pnpm -r publish --access public --no-git-checks --tag V3 --filter="!vite-node" --filter="!@vitest/ws-client"`
-}
+main().catch((error) => {
+  console.error('Error during publishing:', error)
+  process.exit(1)
+})
