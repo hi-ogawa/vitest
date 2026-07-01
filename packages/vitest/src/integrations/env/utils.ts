@@ -7,19 +7,22 @@ export function getWindowKeys(
   win: any,
   additionalKeys: string[] = [],
 ): Set<string> {
-  const keysArray = [...additionalKeys, ...KEYS]
-  const keys = new Set(
-    keysArray.concat(Object.getOwnPropertyNames(win)).filter((k) => {
-      if (skipKeys.includes(k)) {
-        return false
-      }
-      if (k in global) {
-        return keysArray.includes(k)
-      }
+  // Keys we always take from `win`, even when Node's global already defines
+  // them. This curated allowlist is the "override anyway" set.
+  const keys = new Set<string>([...additionalKeys, ...KEYS])
 
-      return true
-    }),
-  )
+  // Plus anything the window owns that Node doesn't already have, so we add DOM
+  // globals without clobbering Node built-ins we haven't opted to override.
+  for (const key of Object.getOwnPropertyNames(win)) {
+    if (!(key in global)) {
+      keys.add(key)
+    }
+  }
+
+  // These are wired up separately (global.window = global, etc.), never copied.
+  for (const skipKey of skipKeys) {
+    keys.delete(skipKey)
+  }
 
   return keys
 }
