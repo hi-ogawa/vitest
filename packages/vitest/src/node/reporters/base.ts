@@ -535,8 +535,8 @@ export abstract class BaseReporter implements Reporter {
     write('\n')
   }
 
-  onTestRemoved(trigger?: string): void {
-    this.log(c.yellow('Test removed...') + (trigger ? c.dim(` [ ${this.relative(trigger)} ]\n`) : ''))
+  onTestRemoved(trigger: string): void {
+    this.log(c.yellow('Test removed...') + c.dim(` [ ${this.relative(trigger)} ]\n`))
   }
 
   shouldLog(log: UserConsoleLog, taskState?: TestResult['state']): boolean {

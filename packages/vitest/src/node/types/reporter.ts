@@ -17,7 +17,7 @@ export interface Reporter {
   onBrowserInit?: (project: TestProject) => Awaitable<void>
   /** @internal   */
   onTaskUpdate?: (packs: TaskResultPack[], events: TaskEventPack[]) => Awaitable<void>
-  onTestRemoved?: (trigger?: string) => Awaitable<void>
+  onTestRemoved?: (trigger: string) => Awaitable<void>
   onWatcherStart?: (files?: File[], errors?: unknown[]) => Awaitable<void>
   onWatcherRerun?: (files: string[], trigger?: string) => Awaitable<void>
   onServerRestart?: (reason?: string) => Awaitable<void>
