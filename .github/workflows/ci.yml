@@ -186,19 +186,24 @@ jobs:
         include:
           - os: windows-latest
             name: runner
-            command: pnpm run test:browser:playwright runner.test.ts
+            slug: runner-windows
+            command: pnpm run test:browser:playwright runner.test.ts --reporter=verbose --reporter=json --outputFile.json=timings-reports/runner-windows.json
           - os: windows-latest
             name: rest 1/2
-            command: "pnpm run test:browser:playwright --exclude 'specs/runner.test.ts' --shard=1/2"
+            slug: rest-1-windows
+            command: "pnpm run test:browser:playwright --exclude 'specs/runner.test.ts' --shard=1/2 --reporter=verbose --reporter=json --outputFile.json=timings-reports/rest-1-windows.json"
           - os: windows-latest
             name: rest 2/2
-            command: "pnpm run test:browser:playwright --exclude 'specs/runner.test.ts' --shard=2/2"
+            slug: rest-2-windows
+            command: "pnpm run test:browser:playwright --exclude 'specs/runner.test.ts' --shard=2/2 --reporter=verbose --reporter=json --outputFile.json=timings-reports/rest-2-windows.json"
           - os: ubuntu-latest
             name: shard 1/2
-            command: pnpm run test:browser:playwright --shard=1/2
+            slug: shard-1-ubuntu
+            command: pnpm run test:browser:playwright --shard=1/2 --reporter=verbose --reporter=json --outputFile.json=timings-reports/shard-1-ubuntu.json
           - os: ubuntu-latest
             name: shard 2/2
-            command: pnpm run test:browser:playwright --shard=2/2
+            slug: shard-2-ubuntu
+            command: pnpm run test:browser:playwright --shard=2/2 --reporter=verbose --reporter=json --outputFile.json=timings-reports/shard-2-ubuntu.json
       fail-fast: false
 
     timeout-minutes: 30
@@ -222,9 +227,65 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      # Prototype: restore duration-aware shard timings produced by a previous
+      # run (see test/browser/vitest.config.unit.mts and #9184). A cache miss
+      # (first run / cold branch) leaves no file and the sequencer falls back to
+      # the count-based split.
+      - name: Restore spec timings
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: test/browser/specs-timings.json
+          key: browser-timings-${{ github.run_id }}
+          restore-keys: |
+            browser-timings-
+
       - name: Test Browser (playwright)
         # matrix.command is a fixed, workflow-defined string
         run: ${{ matrix.command }} # zizmor: ignore[template-injection]
+        env:
+          VITEST_BROWSER_TIMINGS: ${{ github.workspace }}/test/browser/specs-timings.json
+
+      - name: Upload timings report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: browser-timings-report-${{ matrix.slug }}
+          path: test/browser/timings-reports
+          retention-days: 1
+          if-no-files-found: ignore
+
+  browser-timings:
+    needs:
+      - test-browser
+      - changed
+    if: needs.changed.outputs.should_skip != 'true' && !cancelled()
+    runs-on: ubuntu-latest
+    name: Merge browser timings
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-and-cache
+        with:
+          node-version: 24
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: browser-timings-report-*
+          path: test/browser/timings-all
+          merge-multiple: true
+
+      - name: Merge timings
+        working-directory: test/browser
+        run: node scripts/merge-timings.mts timings-all specs-timings.json
+
+      - name: Save spec timings
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: test/browser/specs-timings.json
+          key: browser-timings-${{ github.run_id }}
 
   test-vite7:
     needs: changed
