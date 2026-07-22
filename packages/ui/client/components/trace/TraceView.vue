@@ -26,7 +26,7 @@ const iframeSandbox = computed(() => {
 function onSelectStep(index: number) {
   selectActiveTraceStep(index)
   const step = entries.value[index]
-  if (step?.location) {
+  if (step?.location?.file === props.selection.test.file.filepath) {
     openLocation(props.selection.test, step.location, { focusEditor: false })
   }
 }

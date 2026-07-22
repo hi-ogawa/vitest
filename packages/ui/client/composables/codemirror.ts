@@ -94,6 +94,7 @@ export function showAttachmentSource(
   }
   const { line, column, file } = location
   if (task.file.filepath !== file) {
+    // This is currently unreachable because callers only open locations from the test file.
     return openInEditor(file, line, column)
   }
   navigateTo(
