@@ -8,6 +8,10 @@ import { testRunState } from './client/state'
 import { showTaskSource } from './codemirror'
 import { activeFileId, columnNumber, lineNumber, selectedTest, viewMode } from './params'
 
+export interface NavigationOptions {
+  focusEditor?: boolean
+}
+
 export const currentModule = ref<File>()
 export const dashboardVisible = ref(true)
 export const coverageVisible = ref(false)
@@ -115,7 +119,7 @@ export function showDashboard(show: boolean) {
 
 export function navigateTo(
   { file, line, view, test, column }: Params,
-  options: { focusEditor?: boolean } = {},
+  options: NavigationOptions = {},
 ) {
   focusEditorOnNavigation.value = options.focusEditor ?? true
   activeFileId.value = file

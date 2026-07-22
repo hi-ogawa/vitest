@@ -1,5 +1,6 @@
 import type { RunnerTestCase, RunnerTask as Task, TestArtifactLocation } from 'vitest'
 import type { Ref, WritableComputedRef } from 'vue'
+import type { NavigationOptions } from './navigation'
 import CodeMirror from 'codemirror'
 
 import { markRaw, onUnmounted, shallowRef, watch } from 'vue'
@@ -86,7 +87,7 @@ export function showLocationSource(fileId: string, location: { line: number; col
 export function showAttachmentSource(
   task: RunnerTestCase,
   location?: TestArtifactLocation,
-  options?: { focusEditor?: boolean },
+  options?: NavigationOptions,
 ) {
   if (!location) {
     return

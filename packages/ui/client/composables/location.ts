@@ -1,4 +1,5 @@
 import type { RunnerTestCase, TestArtifactLocation } from 'vitest'
+import type { NavigationOptions } from './navigation'
 import { relative } from 'pathe'
 import { config } from './client'
 import { showAttachmentSource } from './codemirror'
@@ -6,7 +7,7 @@ import { showAttachmentSource } from './codemirror'
 export function openLocation(
   test: RunnerTestCase,
   location?: TestArtifactLocation,
-  options?: { focusEditor?: boolean },
+  options?: NavigationOptions,
 ) {
   return showAttachmentSource(test, location, options)
 }
