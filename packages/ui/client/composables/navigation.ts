@@ -41,6 +41,7 @@ export const detailsPanelVisible = useLocalStorage<boolean>(
 )
 
 export const detailsPosition = ref<'right' | 'bottom'>('right')
+export const focusEditorOnNavigation = ref(true)
 
 nextTick(() => {
   watch(config, () => {
@@ -112,7 +113,11 @@ export function showDashboard(show: boolean) {
   }
 }
 
-export function navigateTo({ file, line, view, test, column }: Params) {
+export function navigateTo(
+  { file, line, view, test, column }: Params,
+  options: { focusEditor?: boolean } = {},
+) {
+  focusEditorOnNavigation.value = options.focusEditor ?? true
   activeFileId.value = file
   lineNumber.value = line
   columnNumber.value = column

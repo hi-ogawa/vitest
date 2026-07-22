@@ -83,7 +83,11 @@ export function showLocationSource(fileId: string, location: { line: number; col
   })
 }
 
-export function showAttachmentSource(task: RunnerTestCase, location?: TestArtifactLocation) {
+export function showAttachmentSource(
+  task: RunnerTestCase,
+  location?: TestArtifactLocation,
+  options?: { focusEditor?: boolean },
+) {
   if (!location) {
     return
   }
@@ -91,11 +95,14 @@ export function showAttachmentSource(task: RunnerTestCase, location?: TestArtifa
   if (task.file.filepath !== file) {
     return openInEditor(file, line, column)
   }
-  navigateTo({
-    file: task.file.id,
-    column: column - 1,
-    line,
-    view: 'editor',
-    test: selectedTest.value,
-  })
+  navigateTo(
+    {
+      file: task.file.id,
+      column: column - 1,
+      line,
+      view: 'editor',
+      test: selectedTest.value,
+    },
+    options,
+  )
 }

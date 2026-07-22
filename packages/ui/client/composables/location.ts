@@ -3,8 +3,12 @@ import { relative } from 'pathe'
 import { config } from './client'
 import { showAttachmentSource } from './codemirror'
 
-export function openLocation(test: RunnerTestCase, location?: TestArtifactLocation) {
-  return showAttachmentSource(test, location)
+export function openLocation(
+  test: RunnerTestCase,
+  location?: TestArtifactLocation,
+  options?: { focusEditor?: boolean },
+) {
+  return showAttachmentSource(test, location, options)
 }
 
 export function getLocationString(location: TestArtifactLocation) {

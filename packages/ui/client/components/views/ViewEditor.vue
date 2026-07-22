@@ -10,6 +10,7 @@ import { finished } from '~/composables/client/state'
 import { codemirrorRef } from '~/composables/codemirror'
 import { isDark } from '~/composables/dark'
 import { createAnsiToHtmlFilter, openInEditor } from '~/composables/error'
+import { focusEditorOnNavigation } from '~/composables/navigation'
 import { columnNumber, lineNumber } from '~/composables/params'
 import {
   activeTraceView,
@@ -81,7 +82,9 @@ watch(() => [loading.value, saving.value, props.file, lineNumber.value, columnNu
         else {
           codemirrorRef.value?.scrollIntoView(line, 100)
           nextTick(() => {
-            codemirrorRef.value?.focus()
+            if (focusEditorOnNavigation.value) {
+              codemirrorRef.value?.focus()
+            }
             codemirrorRef.value?.setCursor(line)
           })
         }
@@ -89,7 +92,9 @@ watch(() => [loading.value, saving.value, props.file, lineNumber.value, columnNu
     }
     else {
       nextTick(() => {
-        codemirrorRef.value?.focus()
+        if (focusEditorOnNavigation.value) {
+          codemirrorRef.value?.focus()
+        }
       })
     }
   }

@@ -3,7 +3,7 @@ import type { NormalizedBrowserTraceData, NormalizedBrowserTraceEntry, TraceSele
 import { createCache, createMirror, rebuild } from 'rrweb-snapshot'
 // @ts-expect-error missing types
 import { Pane, Splitpanes } from 'splitpanes'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import { openLocation } from '~/composables/location'
 import { getTraceEntryClass, selectActiveTraceStep } from '~/composables/trace-view'
 
@@ -14,6 +14,7 @@ const props = defineProps<{
 
 const entries = computed(() => props.trace.entries)
 const selectedStep = computed(() => entries.value[props.selection.selectedStepIndex])
+const stepButtons = useTemplateRef<HTMLButtonElement[]>('stepButtons')
 
 const iframeEl = ref<HTMLIFrameElement>()
 const iframeSandbox = computed(() => {
@@ -26,8 +27,19 @@ function onSelectStep(index: number) {
   selectActiveTraceStep(index)
   const step = entries.value[index]
   if (step?.location) {
-    openLocation(props.selection.test, step.location)
+    openLocation(props.selection.test, step.location, { focusEditor: false })
   }
+}
+
+function onNavigateStep(index: number, offset: number) {
+  const nextIndex = Math.max(0, Math.min(entries.value.length - 1, index + offset))
+  if (nextIndex === index) {
+    return
+  }
+  onSelectStep(nextIndex)
+  const button = stepButtons.value?.[nextIndex]
+  button?.focus()
+  button?.scrollIntoView({ block: 'nearest' })
 }
 
 watch([selectedStep, iframeEl], ([step, iframe]) => {
@@ -147,6 +159,7 @@ function isTraceStepInProgress(step: NormalizedBrowserTraceEntry) {
       <div class="h-full min-h-0 p-4" flex="~ col gap-1" overflow-auto>
         <button
           v-for="(step, index) of entries"
+          ref="stepButtons"
           :key="index"
           type="button"
           data-testid="trace-step"
@@ -155,7 +168,10 @@ function isTraceStepInProgress(step: NormalizedBrowserTraceEntry) {
           :class="getStepButtonClass(step, index)"
           :style="{ paddingInlineStart: `${0.5 + step.depth}rem` }"
           :aria-current="selection.selectedStepIndex === index ? 'step' : undefined"
+          :tabindex="selection.selectedStepIndex === index ? 0 : -1"
           @click="onSelectStep(index)"
+          @keydown.up.prevent="onNavigateStep(index, -1)"
+          @keydown.down.prevent="onNavigateStep(index, 1)"
         >
           <span
             v-if="step.depth > 0"
