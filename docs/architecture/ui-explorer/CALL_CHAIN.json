@@ -1,0 +1,548 @@
+{
+  "roots": [
+    "[application startup]",
+    "[initial snapshot installation]",
+    "[runner event ingestion]",
+    "runCollect",
+    "runFilter",
+    "[explorer query and expansion]",
+    "[selection and details]"
+  ],
+  "nodes": [
+    {
+      "id": "[application startup]",
+      "note": "Creates the client facade and mounts the persistent two-pane Vue shell.",
+      "calls": [
+        {
+          "to": "createVitestClient",
+          "source": "packages/ui/client/composables/client/index.ts:27",
+          "note": "Client modules initialize before the application mount body runs."
+        },
+        {
+          "to": "[Vue application mount]",
+          "source": "packages/ui/client/main.ts:5",
+          "note": "Installs the router and mounts App."
+        }
+      ]
+    },
+    {
+      "id": "createVitestClient",
+      "source": "packages/ui/client/composables/client/index.ts:27",
+      "note": "Selects live WebSocket transport or the static-report adapter behind one client API.",
+      "calls": [
+        {
+          "to": "createWsClient",
+          "source": "packages/ui/client/composables/client/index.ts:32",
+          "note": "Live UI path."
+        },
+        {
+          "to": "createStaticClient",
+          "source": "packages/ui/client/composables/client/index.ts:29",
+          "note": "HTML report path."
+        }
+      ]
+    },
+    {
+      "id": "createWsClient",
+      "source": "packages/ui/client/composables/client/ws.ts:31",
+      "note": "Creates a reactive StateManager and connects birpc to a browser WebSocket.",
+      "calls": [
+        {
+          "to": "[client ready event]",
+          "source": "packages/ui/client/composables/client/ws.ts:133",
+          "note": "A real socket open starts shared snapshot installation."
+        },
+        {
+          "to": "[birpc event boundary]",
+          "source": "packages/ui/client/composables/client/ws.ts:139",
+          "note": "Incoming messages dispatch runner events."
+        }
+      ]
+    },
+    {
+      "id": "createStaticClient",
+      "source": "packages/ui/client/composables/client/static.ts:66",
+      "note": "Decodes embedded metadata and exposes it through the same state and RPC shape.",
+      "calls": [
+        {
+          "to": "[client ready event]",
+          "source": "packages/ui/client/composables/client/static.ts:92",
+          "note": "A synthetic open event reuses live bootstrap logic."
+        }
+      ]
+    },
+    {
+      "id": "[client ready event]",
+      "note": "Socket-compatible readiness boundary shared by live and static clients.",
+      "calls": [
+        {
+          "to": "[initial snapshot installation]",
+          "source": "packages/ui/client/composables/client/index.ts:165",
+          "note": "The client.ws watcher owns snapshot bootstrap."
+        }
+      ]
+    },
+    {
+      "id": "[Vue application mount]",
+      "source": "packages/ui/client/main.ts:5",
+      "note": "Mounts RouterView and resolves the single IndexPage route.",
+      "calls": [
+        {
+          "to": "[IndexPage shell]",
+          "source": "packages/ui/client/main.ts:15",
+          "note": "The page keeps Navigation on the left and switches dashboard/details on the right."
+        }
+      ]
+    },
+    {
+      "id": "[IndexPage shell]",
+      "source": "packages/ui/client/pages/index.vue:83",
+      "note": "Layout shell for explorer, dashboard, details, browser, trace, and connection state."
+    },
+    {
+      "id": "[initial snapshot installation]",
+      "source": "packages/ui/client/composables/client/index.ts:165",
+      "note": "Fetches the initial server/report snapshot and installs both canonical and explorer state.",
+      "calls": [
+        {
+          "to": "[initial snapshot RPC]",
+          "source": "packages/ui/client/composables/client/index.ts:168",
+          "note": "Fetches files, config, and errors concurrently."
+        },
+        {
+          "to": "ExplorerTree.loadFiles",
+          "source": "packages/ui/client/composables/client/index.ts:186",
+          "note": "Builds the explorer mirror and initial flat projection."
+        },
+        {
+          "to": "StateManager.collectFiles",
+          "source": "packages/ui/client/composables/client/index.ts:187",
+          "note": "Installs canonical RunnerTask objects in filesMap and idMap."
+        },
+        {
+          "to": "ExplorerTree.startRun",
+          "source": "packages/ui/client/composables/client/index.ts:188",
+          "note": "Requests a normal collector refresh after installation."
+        },
+        {
+          "to": "[bootstrap Vue refs]",
+          "source": "packages/ui/client/composables/client/index.ts:189",
+          "note": "Publishes projects, errors, config, and connection status."
+        }
+      ]
+    },
+    {
+      "id": "[initial snapshot RPC]",
+      "source": "packages/ui/client/composables/client/index.ts:168",
+      "note": "Remote RPC in live mode and metadata-backed calls in report mode."
+    },
+    {
+      "id": "ExplorerTree.loadFiles",
+      "source": "packages/ui/client/composables/explorer/tree.ts:64",
+      "note": "Creates Layer 2 file/task mirror nodes and asks filtering to publish Layer 3.",
+      "calls": [
+        {
+          "to": "runFilter",
+          "source": "packages/ui/client/composables/explorer/collector.ts:40",
+          "note": "Initial flattening uses the same projection path as later filtering."
+        }
+      ]
+    },
+    {
+      "id": "StateManager.collectFiles",
+      "source": "packages/ui/client/composables/client/state.ts:53",
+      "note": "Owns Layer 1 by storing canonical files and recursively indexing every task id.",
+      "calls": [
+        {
+          "to": "[canonical StateManager]",
+          "source": "packages/ui/client/composables/client/state.ts:68",
+          "note": "filesMap and idMap become the source used by details and explorer joins."
+        }
+      ]
+    },
+    {
+      "id": "ExplorerTree.startRun",
+      "source": "packages/ui/client/composables/explorer/tree.ts:82",
+      "note": "Starts timing and schedules a collector cycle.",
+      "calls": [
+        {
+          "to": "runCollect",
+          "source": "packages/ui/client/composables/explorer/tree.ts:122",
+          "note": "Reached through ExplorerTree.collect and its microtask boundary."
+        }
+      ]
+    },
+    {
+      "id": "[bootstrap Vue refs]",
+      "source": "packages/ui/client/composables/client/index.ts:185",
+      "note": "Application-level refs expose readiness/configuration outside the task models."
+    },
+    {
+      "id": "[runner event ingestion]",
+      "note": "Separates canonical event writes from the explorer's scheduled projection refresh.",
+      "calls": [
+        {
+          "to": "[birpc event boundary]",
+          "source": "packages/ui/client/composables/client/ws.ts:139",
+          "note": "Selects an event function from each incoming RPC message."
+        }
+      ]
+    },
+    {
+      "id": "[birpc event boundary]",
+      "source": "packages/ui/client/composables/client/ws.ts:55",
+      "note": "Transport-to-application dispatch boundary.",
+      "calls": [
+        {
+          "to": "ws onCollected",
+          "source": "packages/ui/client/composables/client/ws.ts:69",
+          "note": "Fresh task structure."
+        },
+        {
+          "to": "ws onTaskUpdate",
+          "source": "packages/ui/client/composables/client/ws.ts:73",
+          "note": "Incremental results and metadata."
+        },
+        {
+          "to": "ws logs and artifacts",
+          "source": "packages/ui/client/composables/client/ws.ts:57",
+          "note": "Progressive detail payloads."
+        },
+        {
+          "to": "ws onFinished",
+          "source": "packages/ui/client/composables/client/ws.ts:81",
+          "note": "Run completion and final errors."
+        }
+      ]
+    },
+    {
+      "id": "ws onCollected",
+      "source": "packages/ui/client/composables/client/ws.ts:69",
+      "note": "Writes fresh structures into StateManager; current main has no UI onCollected projection handler.",
+      "calls": [
+        {
+          "to": "StateManager.collectFiles",
+          "source": "packages/ui/client/composables/client/ws.ts:70",
+          "note": "Canonical state changes immediately."
+        },
+        {
+          "to": "[no explorer onCollected handler]",
+          "source": "packages/ui/client/composables/client/ws.ts:71",
+          "note": "Layer 2 is not directly reconciled at this event on current main."
+        }
+      ]
+    },
+    {
+      "id": "[no explorer onCollected handler]",
+      "note": "Intentional leaf showing the missing direct Layer 1 to Layer 2 collection edge."
+    },
+    {
+      "id": "ws onTaskUpdate",
+      "source": "packages/ui/client/composables/client/ws.ts:73",
+      "note": "Mutates canonical tasks first and then notifies ExplorerTree of changed ids.",
+      "calls": [
+        {
+          "to": "[canonical StateManager]",
+          "source": "packages/ui/client/composables/client/ws.ts:74",
+          "note": "StateManager.updateTasks writes result/meta in place."
+        },
+        {
+          "to": "ExplorerTree.resumeRun",
+          "source": "packages/ui/client/composables/client/index.ts:44",
+          "note": "Changed ids enter the pending-task scheduler."
+        }
+      ]
+    },
+    {
+      "id": "ws logs and artifacts",
+      "source": "packages/ui/client/composables/client/ws.ts:57",
+      "note": "Logs mutate canonical tasks directly; artifacts also mark their test pending for explorer refresh.",
+      "calls": [
+        {
+          "to": "[canonical StateManager]",
+          "source": "packages/ui/client/composables/client/state.ts:137",
+          "note": "Detail views can observe canonical logs/annotations/artifacts directly."
+        },
+        {
+          "to": "ExplorerTree.resumeRun",
+          "source": "packages/ui/client/composables/explorer/tree.ts:94",
+          "note": "Artifact-only activity starts the same collector loop."
+        }
+      ]
+    },
+    {
+      "id": "ws onFinished",
+      "source": "packages/ui/client/composables/client/ws.ts:81",
+      "note": "Stops live polling and requests the final full explorer sweep.",
+      "calls": [
+        {
+          "to": "ExplorerTree.endRun",
+          "source": "packages/ui/client/composables/client/index.ts:51",
+          "note": "Final projection happens before collector code publishes idle."
+        }
+      ]
+    },
+    {
+      "id": "ExplorerTree.resumeRun",
+      "source": "packages/ui/client/composables/explorer/tree.ts:98",
+      "note": "Groups changed ids by file and resumes a collector capped at roughly 10 FPS.",
+      "calls": [
+        {
+          "to": "[RAF and microtask scheduler]",
+          "source": "packages/ui/client/composables/explorer/tree.ts:104",
+          "note": "Coalesces result bursts before projection."
+        }
+      ]
+    },
+    {
+      "id": "ExplorerTree.endRun",
+      "source": "packages/ui/client/composables/explorer/tree.ts:108",
+      "note": "Pauses RAF and requests end-mode collection over all files.",
+      "calls": [
+        {
+          "to": "runCollect",
+          "source": "packages/ui/client/composables/explorer/tree.ts:112",
+          "note": "Reached through ExplorerTree.collect as a final queued call."
+        }
+      ]
+    },
+    {
+      "id": "[RAF and microtask scheduler]",
+      "source": "packages/ui/client/composables/explorer/tree.ts:61",
+      "note": "Scheduling boundary between event bursts and projection work.",
+      "calls": [
+        {
+          "to": "runCollect",
+          "source": "packages/ui/client/composables/explorer/tree.ts:115",
+          "note": "Each allowed tick starts the collector's ordered microtask phases."
+        }
+      ]
+    },
+    {
+      "id": "[canonical StateManager]",
+      "source": "packages/ui/client/composables/client/state.ts:26",
+      "note": "Layer 1 holds live RunnerTask structures, results, logs, annotations, and artifacts.",
+      "calls": [
+        {
+          "to": "[selection and details]",
+          "source": "packages/ui/client/components/FileDetails.vue:28",
+          "note": "Details reads this layer directly and bypasses flattened explorer state."
+        }
+      ]
+    },
+    {
+      "id": "runCollect",
+      "source": "packages/ui/client/composables/explorer/collector.ts:94",
+      "note": "One scheduled flush updates the mirror, recomputes summary, then rebuilds the flat view in queued phases.",
+      "calls": [
+        {
+          "to": "[Layer 2 mirror update]",
+          "source": "packages/ui/client/composables/explorer/collector.ts:107",
+          "note": "Updates pending files during a run or every file at the end."
+        },
+        {
+          "to": "collectData",
+          "source": "packages/ui/client/composables/explorer/collector.ts:116",
+          "note": "Recomputes full dashboard summary from canonical tasks."
+        },
+        {
+          "to": "runFilter",
+          "source": "packages/ui/client/composables/explorer/collector.ts:130",
+          "note": "doRunFilter/refreshExplorer eventually invokes the shared flat projection."
+        }
+      ]
+    },
+    {
+      "id": "[Layer 2 mirror update]",
+      "source": "packages/ui/client/composables/explorer/collector.ts:153",
+      "note": "Copies structural and display fields from idMap tasks into ExplorerTree.nodes/root."
+    },
+    {
+      "id": "collectData",
+      "source": "packages/ui/client/composables/explorer/collector.ts:303",
+      "note": "Traverses canonical files/tests and replaces the reactive summary counters.",
+      "calls": [
+        {
+          "to": "[Dashboard render]",
+          "source": "packages/ui/client/components/dashboard/TestsFilesContainer.vue:10",
+          "note": "Dashboard components read ExplorerTree.summary directly."
+        }
+      ]
+    },
+    {
+      "id": "[Dashboard render]",
+      "source": "packages/ui/client/components/Dashboard.vue:7",
+      "note": "Reactive summary consumer; independent from the flat explorer list."
+    },
+    {
+      "id": "runFilter",
+      "source": "packages/ui/client/composables/explorer/filter.ts:22",
+      "note": "Derives Layer 3 by joining canonical task matching with mirror ordering/expansion.",
+      "calls": [
+        {
+          "to": "[Layer 1 plus Layer 2 traversal]",
+          "source": "packages/ui/client/composables/explorer/filter.ts:26",
+          "note": "filterAll/filterNode traverse mirror nodes while matcher looks each id up in StateManager."
+        },
+        {
+          "to": "[Layer 3 shallow-ref commit]",
+          "source": "packages/ui/client/composables/explorer/filter.ts:30",
+          "note": "Replacing uiEntries is the explorer list's Vue render signal."
+        }
+      ]
+    },
+    {
+      "id": "[Layer 1 plus Layer 2 traversal]",
+      "source": "packages/ui/client/composables/explorer/filter.ts:34",
+      "note": "Uses ExplorerTree structure/view state, but canonical idMap tasks decide search and status matches."
+    },
+    {
+      "id": "[Layer 3 shallow-ref commit]",
+      "source": "packages/ui/client/composables/explorer/state.ts:13",
+      "note": "uiEntries/uiFiles/filteredFiles are module-level Vue projection refs.",
+      "calls": [
+        {
+          "to": "[virtualized explorer render]",
+          "source": "packages/ui/client/components/explorer/Explorer.vue:316",
+          "note": "RecycleScroller renders visible rows keyed by task id."
+        }
+      ]
+    },
+    {
+      "id": "[virtualized explorer render]",
+      "source": "packages/ui/client/components/explorer/Explorer.vue:316",
+      "note": "Left pane renders scalar mirror fields while each row can still look up its canonical task."
+    },
+    {
+      "id": "[explorer query and expansion]",
+      "note": "User-side commands update the flat projection without passing through runner ingestion.",
+      "calls": [
+        {
+          "to": "[query controls watcher]",
+          "source": "packages/ui/client/composables/explorer/search.ts:117",
+          "note": "Search, status, project, and sort changes."
+        },
+        {
+          "to": "[expand or collapse command]",
+          "source": "packages/ui/client/components/explorer/ExplorerItem.vue:66",
+          "note": "Single-row and expand/collapse-all interactions."
+        }
+      ]
+    },
+    {
+      "id": "[query controls watcher]",
+      "source": "packages/ui/client/composables/explorer/search.ts:117",
+      "note": "Persists query state and asks ExplorerTree to refilter after Vue's flush.",
+      "calls": [
+        {
+          "to": "runFilter",
+          "source": "packages/ui/client/composables/explorer/tree.ts:209",
+          "note": "ExplorerTree.filterNodes adds one microtask before shared filtering."
+        }
+      ]
+    },
+    {
+      "id": "[expand or collapse command]",
+      "source": "packages/ui/client/composables/explorer/tree.ts:171",
+      "note": "Mutates mirror expansion state and either locally edits or fully rebuilds uiEntries.",
+      "calls": [
+        {
+          "to": "runFilter",
+          "source": "packages/ui/client/composables/explorer/expand.ts:93",
+          "note": "Expand-all uses the full shared projection path."
+        },
+        {
+          "to": "[Layer 3 shallow-ref commit]",
+          "source": "packages/ui/client/composables/explorer/collapse.ts:34",
+          "note": "Single-node and collapse-all commands can replace uiEntries directly."
+        }
+      ]
+    },
+    {
+      "id": "[selection and details]",
+      "note": "Selection is URL-backed and renders canonical tasks directly rather than consuming uiEntries.",
+      "calls": [
+        {
+          "to": "clickOnTask",
+          "source": "packages/ui/client/composables/navigation.ts:125",
+          "note": "Receives a canonical task from an explorer row action."
+        },
+        {
+          "to": "navigateTo",
+          "source": "packages/ui/client/composables/navigation.ts:131",
+          "note": "Normalizes file/test/view selection."
+        },
+        {
+          "to": "[URL hash selection refs]",
+          "source": "packages/ui/client/composables/params.ts:11",
+          "note": "Selection also restores directly from the URL on page load."
+        }
+      ]
+    },
+    {
+      "id": "clickOnTask",
+      "source": "packages/ui/client/composables/navigation.ts:125",
+      "note": "Chooses the containing file, optional test, and current/editor view.",
+      "calls": [
+        {
+          "to": "navigateTo",
+          "source": "packages/ui/client/composables/navigation.ts:131",
+          "note": "Writes the normalized selection."
+        }
+      ]
+    },
+    {
+      "id": "navigateTo",
+      "source": "packages/ui/client/composables/navigation.ts:115",
+      "note": "Updates URL refs, resolves the canonical file, and hides dashboard/coverage.",
+      "calls": [
+        {
+          "to": "[URL hash selection refs]",
+          "source": "packages/ui/client/composables/navigation.ts:116",
+          "note": "Writes file, test, view, line, and column."
+        }
+      ]
+    },
+    {
+      "id": "[URL hash selection refs]",
+      "source": "packages/ui/client/composables/params.ts:11",
+      "note": "Reactive durable state for activeFileId, selectedTest, and viewMode.",
+      "calls": [
+        {
+          "to": "[canonical task lookup]",
+          "source": "packages/ui/client/composables/client/index.ts:75",
+          "note": "activeFileId and selectedTest resolve through StateManager.idMap."
+        }
+      ]
+    },
+    {
+      "id": "[canonical task lookup]",
+      "source": "packages/ui/client/composables/client/index.ts:75",
+      "note": "The details path bypasses ExplorerTree.nodes and uiEntries.",
+      "calls": [
+        {
+          "to": "[FileDetails render]",
+          "source": "packages/ui/client/components/FileDetails.vue:100",
+          "note": "Passes canonical file/test objects into the selected detail view."
+        }
+      ]
+    },
+    {
+      "id": "[FileDetails render]",
+      "source": "packages/ui/client/components/FileDetails.vue:100",
+      "note": "Switches among report, test report, module graph, editor, and console using canonical data.",
+      "calls": [
+        {
+          "to": "[detail view boundaries]",
+          "source": "packages/ui/client/components/FileDetails.vue:202",
+          "note": "Stops before deep editor, graph, console, and report rendering internals."
+        }
+      ]
+    },
+    {
+      "id": "[detail view boundaries]",
+      "source": "packages/ui/client/components/FileDetails.vue:202",
+      "note": "Report/editor/console/graph consumers continue to observe the same canonical task objects."
+    }
+  ]
+}

@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Narrated Call Chain</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f4f1ea;
+      --surface: #fffefa;
+      --ink: #202421;
+      --muted: #6c726d;
+      --source: #66758a;
+      --faint: #aeb4ae;
+      --line: #d7d5cc;
+      --accent: #245f4b;
+      --accent-soft: #e8f1ec;
+      --alert: #93443c;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 14px/1.48 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .shell { width: min(1180px, calc(100% - 36px)); margin: 0 auto; }
+    .page-header {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .header-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: flex-start; gap: 6px 18px; }
+    h1 { margin: 0; font-size: 17px; line-height: 1.2; letter-spacing: -0.015em; }
+    .meta { margin: 0; color: var(--muted); font-size: 11px; }
+    .meta code { color: var(--ink); }
+    main { padding: 24px 0 44px; }
+    .toc {
+      position: fixed;
+      top: 10px;
+      right: max(30px, calc((100vw - 1180px) / 2 + 12px));
+      z-index: 10;
+      width: min(300px, calc(100vw - 36px));
+      font: 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .toc summary {
+      width: max-content;
+      margin-left: auto;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface);
+      box-shadow: 0 2px 8px rgb(32 36 33 / 10%);
+      color: var(--muted);
+      cursor: pointer;
+      list-style: none;
+    }
+    .toc summary::-webkit-details-marker { display: none; }
+    .toc summary::after { content: " ▾"; color: var(--faint); }
+    .toc[open] summary::after { content: " ▴"; }
+    .toc-panel {
+      position: absolute;
+      top: 36px;
+      right: 0;
+      width: 100%;
+      padding: 7px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--surface);
+      box-shadow: 0 8px 24px rgb(32 36 33 / 14%);
+    }
+    .toc nav { padding-bottom: 7px; border-bottom: 1px solid var(--line); }
+    .toc nav a {
+      display: block;
+      padding: 6px 8px;
+      border-radius: 5px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .toc nav a:hover { background: var(--accent-soft); color: var(--ink); }
+    .toc nav span { display: inline-block; width: 24px; color: var(--faint); }
+    .note-controls { display: flex; gap: 12px; padding: 9px 8px 2px; color: var(--muted); }
+    .note-controls label { display: inline-flex; align-items: center; gap: 5px; }
+    .note-controls input { margin: 0; accent-color: var(--accent); }
+    .root-section {
+      scroll-margin-top: 12px;
+      margin-bottom: 28px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .root-heading {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr);
+      align-items: center;
+      gap: 8px;
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #faf9f4;
+    }
+    .root-heading span { color: var(--faint); font: 700 11px/1 ui-monospace, monospace; }
+    .root-heading h2 { margin: 0; font: 650 15px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .root-heading a { color: inherit; text-decoration: none; }
+    .root-heading a:hover { color: var(--accent); }
+    .tree, .tree ol { margin: 0; padding: 0; list-style: none; }
+    .root-tree { padding: 17px 20px 21px; overflow-x: auto; }
+    .tree ol { position: relative; margin-left: 13px; padding-left: 22px; }
+    .tree li > ol { margin-top: 5px; }
+    .tree ol::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 16px;
+      left: 0;
+      border-left: 1px solid var(--line);
+    }
+    .tree li { position: relative; min-width: 0; padding: 4px 0; }
+    .tree ol > li::before {
+      content: "";
+      position: absolute;
+      top: 13px;
+      left: -22px;
+      width: 16px;
+      border-top: 1px solid var(--line);
+    }
+    .tree ol > li:last-child::after {
+      content: "";
+      position: absolute;
+      top: 14px;
+      bottom: 0;
+      left: -22px;
+      border-left: 3px solid var(--surface);
+    }
+    article { position: relative; z-index: 1; min-width: 540px; scroll-margin-top: 12px; }
+    .identity {
+      display: grid;
+      grid-template-columns: max-content max-content minmax(220px, 1fr);
+      gap: 8px;
+      align-items: baseline;
+      min-height: 18px;
+    }
+    .name { color: var(--ink); font: 720 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .root-link {
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      text-decoration: underline;
+      text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+      text-underline-offset: 2px;
+    }
+    .root-link:hover { color: var(--ink); }
+    .repeat-link {
+      color: var(--source);
+      text-decoration-line: underline;
+      text-decoration-style: dotted;
+      text-decoration-color: var(--faint);
+      text-underline-offset: 3px;
+    }
+    .repeat-link:hover { color: var(--ink); }
+    .definition {
+      justify-self: end;
+      color: var(--source);
+      font-size: 10px;
+      overflow-wrap: anywhere;
+      text-align: right;
+    }
+    .marker {
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+    .missing .marker { background: #f7e5e2; color: var(--alert); }
+    .node-note { max-width: 780px; margin: 2px 0 3px; color: var(--muted); font-size: 13px; }
+    .edge-note { max-width: 780px; margin: 1px 0 3px; color: #765c3b; font-size: 12px; }
+    body:has(#show-node-notes:not(:checked)) .node-note { display: none; }
+    body:has(#show-edge-notes:not(:checked)) .edge-note { display: none; }
+    @media (max-width: 760px) {
+      .shell { width: min(100% - 20px, 1180px); }
+      .root-tree { padding-inline: 13px; }
+      .tree ol { margin-left: 8px; padding-left: 17px; }
+      .tree ol > li::before { left: -17px; width: 12px; }
+      .tree ol > li:last-child::after { left: -17px; }
+      article { min-width: 420px; }
+      .identity { grid-template-columns: max-content max-content minmax(160px, 1fr); }
+    }
+
+    @media print {
+      body { background: white; }
+      .shell { width: 100%; }
+      .root-section { break-inside: avoid-page; border-color: #bbb; }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <div class="shell header-row">
+      <h1>Call chain</h1>
+      <p class="meta">Dataset <code>CALL_CHAIN.json</code> · 42 nodes · 7 roots</p>
+      <details class="toc">
+      <summary>View</summary>
+      <div class="toc-panel">
+        <nav aria-label="Call-chain roots"><a href="#root-1-application-startup"><span>01</span>[application startup]</a><a href="#root-2-initial-snapshot-installation"><span>02</span>[initial snapshot installation]</a><a href="#root-3-runner-event-ingestion"><span>03</span>[runner event ingestion]</a><a href="#root-4-runcollect"><span>04</span>runCollect</a><a href="#root-5-runfilter"><span>05</span>runFilter</a><a href="#root-6-explorer-query-and-expansion"><span>06</span>[explorer query and expansion]</a><a href="#root-7-selection-and-details"><span>07</span>[selection and details]</a></nav>
+        <div class="note-controls" aria-label="Note visibility">
+          <label><input id="show-node-notes" type="checkbox" checked>Node notes</label>
+          <label><input id="show-edge-notes" type="checkbox" checked>Edge notes</label>
+        </div>
+      </div>
+    </details>
+    </div>
+  </header>
+  <main class="shell"><section class="root-section" id="root-1-application-startup">
+        <header class="root-heading"><span>01</span><h2><a href="#root-1-application-startup">[application startup]</a></h2></header>
+        <ol class="tree root-tree"><li class="node"><article id="occurrence-01-1"><div class="identity">
+      <code class="name">[application startup]</code>
+      
+      
+    </div><p class="node-note">Creates the client facade and mounts the persistent two-pane Vue shell.</p></article><ol><li class="node"><article id="occurrence-01-2"><div class="identity">
+      <code class="name">createVitestClient</code>
+      
+      <code class="definition">packages/ui/client/composables/client/index.ts:27</code>
+    </div><p class="node-note">Selects live WebSocket transport or the static-report adapter behind one client API.</p><p class="edge-note">Client modules initialize before the application mount body runs.</p></article><ol><li class="node"><article id="occurrence-01-3"><div class="identity">
+      <code class="name">createWsClient</code>
+      
+      <code class="definition">packages/ui/client/composables/client/ws.ts:31</code>
+    </div><p class="node-note">Creates a reactive StateManager and connects birpc to a browser WebSocket.</p><p class="edge-note">Live UI path.</p></article><ol><li class="node"><article id="occurrence-01-4"><div class="identity">
+      <code class="name">[client ready event]</code>
+      
+      
+    </div><p class="node-note">Socket-compatible readiness boundary shared by live and static clients.</p><p class="edge-note">A real socket open starts shared snapshot installation.</p></article><ol><li class="node root-reference"><article><div class="identity">
+      <a class="name root-link" href="#root-2-initial-snapshot-installation">[initial snapshot installation]</a>
+      
+      <code class="definition">packages/ui/client/composables/client/index.ts:165</code>
+    </div><p class="node-note">Fetches the initial server/report snapshot and installs both canonical and explorer state.</p><p class="edge-note">The client.ws watcher owns snapshot bootstrap.</p></article></li></ol></li><li class="node"><article id="occurrence-01-5"><div class="identity">
+      <code class="name">[birpc event boundary]</code>
+      
+      <code class="definition">packages/ui/client/composables/client/ws.ts:55</code>
+    </div><p class="node-note">Transport-to-application dispatch boundary.</p><p class="edge-note">Incoming messages dispatch runner events.</p></article><ol><li class="node"><article id="occurrence-01-6"><div class="identity">
+      <code class="name">ws onCollected</code>
+      
+      <code class="definition">packages/ui/client/composables/client/ws.ts:69</code>
+    </div><p class="node-note">Writes fresh structures into StateManager; current main has no UI onCollected projection handler.</p><p class="edge-note">Fresh task structure.</p></article><ol><li class="node"><article id="occurrence-01-7"><div class="identity">
+      <code class="name">StateManager.collectFiles</code>
+      
+      <code class="definition">packages/ui/client/composables/client/state.ts:53</code>
+    </div><p class="node-note">Owns Layer 1 by storing canonical files and recursively indexing every task id.</p><p class="edge-note">Canonical state changes immediately.</p></article><ol><li class="node"><article id="occurrence-01-8"><div class="identity">
+      <code class="name">[canonical StateManager]</code>
+      
+      <code class="definition">packages/ui/client/composables/client/state.ts:26</code>
+    </div><p class="node-note">Layer 1 holds live RunnerTask structures, results, logs, annotations, and artifacts.</p><p class="edge-note">filesMap and idMap become the source used by details and explorer joins.</p></article><ol><li class="node root-reference"><article><div class="identity">
+      <a class="name root-link" href="#root-7-selection-and-details">[selection and details]</a>
+      
+      
+    </div><p class="node-note">Selection is URL-backed and renders canonical tasks directly rather than consuming uiEntries.</p><p class="edge-note">Details reads this layer directly and bypasses flattened explorer state.</p></article></li></ol></li></ol></li><li class="node"><article id="occurrence-01-9"><div class="identity">
+      <code class="name">[no explorer onCollected handler]</code>
+      
+      
+    </div><p class="node-note">Intentional leaf showing the missing direct Layer 1 to Layer 2 collection edge.</p><p class="edge-note">Layer 2 is not directly reconciled at this event on current main.</p></article></li></ol></li><li class="node"><article id="occurrence-01-10"><div class="identity">
+      <code class="name">ws onTaskUpdate</code>
+      
+      <code class="definition">packages/ui/client/composables/client/ws.ts:73</code>
+    </div><p class="node-note">Mutates canonical tasks first and then notifies ExplorerTree of changed ids.</p><p class="edge-note">Incremental results and metadata.</p></article><ol><li class="node repeated"><article><div class="identity">
+      <a class="name repeat-link" href="#occurrence-01-8">[canonical StateManager]</a>
+      
+      <code class="definition">packages/ui/client/composables/client/state.ts:26</code>
+    </div><p class="edge-note">StateManager.updateTasks writes result/meta in place.</p></article></li><li class="node"><article id="occurrence-01-11"><div class="identity">
+      <code class="name">ExplorerTree.resumeRun</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/tree.ts:98</code>
+    </div><p class="node-note">Groups changed ids by file and resumes a collector capped at roughly 10 FPS.</p><p class="edge-note">Changed ids enter the pending-task scheduler.</p></article><ol><li class="node"><article id="occurrence-01-12"><div class="identity">
+      <code class="name">[RAF and microtask scheduler]</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/tree.ts:61</code>
+    </div><p class="node-note">Scheduling boundary between event bursts and projection work.</p><p class="edge-note">Coalesces result bursts before projection.</p></article><ol><li class="node root-reference"><article><div class="identity">
+      <a class="name root-link" href="#root-4-runcollect">runCollect</a>
+      
+      <code class="definition">packages/ui/client/composables/explorer/collector.ts:94</code>
+    </div><p class="node-note">One scheduled flush updates the mirror, recomputes summary, then rebuilds the flat view in queued phases.</p><p class="edge-note">Each allowed tick starts the collector&#39;s ordered microtask phases.</p></article></li></ol></li></ol></li></ol></li><li class="node"><article id="occurrence-01-13"><div class="identity">
+      <code class="name">ws logs and artifacts</code>
+      
+      <code class="definition">packages/ui/client/composables/client/ws.ts:57</code>
+    </div><p class="node-note">Logs mutate canonical tasks directly; artifacts also mark their test pending for explorer refresh.</p><p class="edge-note">Progressive detail payloads.</p></article><ol><li class="node repeated"><article><div class="identity">
+      <a class="name repeat-link" href="#occurrence-01-8">[canonical StateManager]</a>
+      
+      <code class="definition">packages/ui/client/composables/client/state.ts:26</code>
+    </div><p class="edge-note">Detail views can observe canonical logs/annotations/artifacts directly.</p></article></li><li class="node repeated"><article><div class="identity">
+      <a class="name repeat-link" href="#occurrence-01-11">ExplorerTree.resumeRun</a>
+      
+      <code class="definition">packages/ui/client/composables/explorer/tree.ts:98</code>
+    </div><p class="edge-note">Artifact-only activity starts the same collector loop.</p></article></li></ol></li><li class="node"><article id="occurrence-01-14"><div class="identity">
+      <code class="name">ws onFinished</code>
+      
+      <code class="definition">packages/ui/client/composables/client/ws.ts:81</code>
+    </div><p class="node-note">Stops live polling and requests the final full explorer sweep.</p><p class="edge-note">Run completion and final errors.</p></article><ol><li class="node"><article id="occurrence-01-15"><div class="identity">
+      <code class="name">ExplorerTree.endRun</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/tree.ts:108</code>
+    </div><p class="node-note">Pauses RAF and requests end-mode collection over all files.</p><p class="edge-note">Final projection happens before collector code publishes idle.</p></article><ol><li class="node root-reference"><article><div class="identity">
+      <a class="name root-link" href="#root-4-runcollect">runCollect</a>
+      
+      <code class="definition">packages/ui/client/composables/explorer/collector.ts:94</code>
+    </div><p class="node-note">One scheduled flush updates the mirror, recomputes summary, then rebuilds the flat view in queued phases.</p><p class="edge-note">Reached through ExplorerTree.collect as a final queued call.</p></article></li></ol></li></ol></li></ol></li></ol></li><li class="node"><article id="occurrence-01-16"><div class="identity">
+      <code class="name">createStaticClient</code>
+      
+      <code class="definition">packages/ui/client/composables/client/static.ts:66</code>
+    </div><p class="node-note">Decodes embedded metadata and exposes it through the same state and RPC shape.</p><p class="edge-note">HTML report path.</p></article><ol><li class="node repeated"><article><div class="identity">
+      <a class="name repeat-link" href="#occurrence-01-4">[client ready event]</a>
+      
+      
+    </div><p class="edge-note">A synthetic open event reuses live bootstrap logic.</p></article></li></ol></li></ol></li><li class="node"><article id="occurrence-01-17"><div class="identity">
+      <code class="name">[Vue application mount]</code>
+      
+      <code class="definition">packages/ui/client/main.ts:5</code>
+    </div><p class="node-note">Mounts RouterView and resolves the single IndexPage route.</p><p class="edge-note">Installs the router and mounts App.</p></article><ol><li class="node"><article id="occurrence-01-18"><div class="identity">
+      <code class="name">[IndexPage shell]</code>
+      
+      <code class="definition">packages/ui/client/pages/index.vue:83</code>
+    </div><p class="node-note">Layout shell for explorer, dashboard, details, browser, trace, and connection state.</p><p class="edge-note">The page keeps Navigation on the left and switches dashboard/details on the right.</p></article></li></ol></li></ol></li></ol>
+      </section><section class="root-section" id="root-2-initial-snapshot-installation">
+        <header class="root-heading"><span>02</span><h2><a href="#root-2-initial-snapshot-installation">[initial snapshot installation]</a></h2></header>
+        <ol class="tree root-tree"><li class="node"><article id="occurrence-02-1"><div class="identity">
+      <code class="name">[initial snapshot installation]</code>
+      
+      <code class="definition">packages/ui/client/composables/client/index.ts:165</code>
+    </div><p class="node-note">Fetches the initial server/report snapshot and installs both canonical and explorer state.</p></article><ol><li class="node"><article id="occurrence-02-2"><div class="identity">
+      <code class="name">[initial snapshot RPC]</code>
+      
+      <code class="definition">packages/ui/client/composables/client/index.ts:168</code>
+    </div><p class="node-note">Remote RPC in live mode and metadata-backed calls in report mode.</p><p class="edge-note">Fetches files, config, and errors concurrently.</p></article></li><li class="node"><article id="occurrence-02-3"><div class="identity">
+      <code class="name">ExplorerTree.loadFiles</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/tree.ts:64</code>
+    </div><p class="node-note">Creates Layer 2 file/task mirror nodes and asks filtering to publish Layer 3.</p><p class="edge-note">Builds the explorer mirror and initial flat projection.</p></article><ol><li class="node root-reference"><article><div class="identity">
+      <a class="name root-link" href="#root-5-runfilter">runFilter</a>
+      
+      <code class="definition">packages/ui/client/composables/explorer/filter.ts:22</code>
+    </div><p class="node-note">Derives Layer 3 by joining canonical task matching with mirror ordering/expansion.</p><p class="edge-note">Initial flattening uses the same projection path as later filtering.</p></article></li></ol></li><li class="node"><article id="occurrence-02-4"><div class="identity">
+      <code class="name">StateManager.collectFiles</code>
+      
+      <code class="definition">packages/ui/client/composables/client/state.ts:53</code>
+    </div><p class="node-note">Owns Layer 1 by storing canonical files and recursively indexing every task id.</p><p class="edge-note">Installs canonical RunnerTask objects in filesMap and idMap.</p></article><ol><li class="node"><article id="occurrence-02-5"><div class="identity">
+      <code class="name">[canonical StateManager]</code>
+      
+      <code class="definition">packages/ui/client/composables/client/state.ts:26</code>
+    </div><p class="node-note">Layer 1 holds live RunnerTask structures, results, logs, annotations, and artifacts.</p><p class="edge-note">filesMap and idMap become the source used by details and explorer joins.</p></article><ol><li class="node root-reference"><article><div class="identity">
+      <a class="name root-link" href="#root-7-selection-and-details">[selection and details]</a>
+      
+      
+    </div><p class="node-note">Selection is URL-backed and renders canonical tasks directly rather than consuming uiEntries.</p><p class="edge-note">Details reads this layer directly and bypasses flattened explorer state.</p></article></li></ol></li></ol></li><li class="node"><article id="occurrence-02-6"><div class="identity">
+      <code class="name">ExplorerTree.startRun</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/tree.ts:82</code>
+    </div><p class="node-note">Starts timing and schedules a collector cycle.</p><p class="edge-note">Requests a normal collector refresh after installation.</p></article><ol><li class="node root-reference"><article><div class="identity">
+      <a class="name root-link" href="#root-4-runcollect">runCollect</a>
+      
+      <code class="definition">packages/ui/client/composables/explorer/collector.ts:94</code>
+    </div><p class="node-note">One scheduled flush updates the mirror, recomputes summary, then rebuilds the flat view in queued phases.</p><p class="edge-note">Reached through ExplorerTree.collect and its microtask boundary.</p></article></li></ol></li><li class="node"><article id="occurrence-02-7"><div class="identity">
+      <code class="name">[bootstrap Vue refs]</code>
+      
+      <code class="definition">packages/ui/client/composables/client/index.ts:185</code>
+    </div><p class="node-note">Application-level refs expose readiness/configuration outside the task models.</p><p class="edge-note">Publishes projects, errors, config, and connection status.</p></article></li></ol></li></ol>
+      </section><section class="root-section" id="root-3-runner-event-ingestion">
+        <header class="root-heading"><span>03</span><h2><a href="#root-3-runner-event-ingestion">[runner event ingestion]</a></h2></header>
+        <ol class="tree root-tree"><li class="node"><article id="occurrence-03-1"><div class="identity">
+      <code class="name">[runner event ingestion]</code>
+      
+      
+    </div><p class="node-note">Separates canonical event writes from the explorer&#39;s scheduled projection refresh.</p></article><ol><li class="node"><article id="occurrence-03-2"><div class="identity">
+      <code class="name">[birpc event boundary]</code>
+      
+      <code class="definition">packages/ui/client/composables/client/ws.ts:55</code>
+    </div><p class="node-note">Transport-to-application dispatch boundary.</p><p class="edge-note">Selects an event function from each incoming RPC message.</p></article><ol><li class="node"><article id="occurrence-03-3"><div class="identity">
+      <code class="name">ws onCollected</code>
+      
+      <code class="definition">packages/ui/client/composables/client/ws.ts:69</code>
+    </div><p class="node-note">Writes fresh structures into StateManager; current main has no UI onCollected projection handler.</p><p class="edge-note">Fresh task structure.</p></article><ol><li class="node"><article id="occurrence-03-4"><div class="identity">
+      <code class="name">StateManager.collectFiles</code>
+      
+      <code class="definition">packages/ui/client/composables/client/state.ts:53</code>
+    </div><p class="node-note">Owns Layer 1 by storing canonical files and recursively indexing every task id.</p><p class="edge-note">Canonical state changes immediately.</p></article><ol><li class="node"><article id="occurrence-03-5"><div class="identity">
+      <code class="name">[canonical StateManager]</code>
+      
+      <code class="definition">packages/ui/client/composables/client/state.ts:26</code>
+    </div><p class="node-note">Layer 1 holds live RunnerTask structures, results, logs, annotations, and artifacts.</p><p class="edge-note">filesMap and idMap become the source used by details and explorer joins.</p></article><ol><li class="node root-reference"><article><div class="identity">
+      <a class="name root-link" href="#root-7-selection-and-details">[selection and details]</a>
+      
+      
+    </div><p class="node-note">Selection is URL-backed and renders canonical tasks directly rather than consuming uiEntries.</p><p class="edge-note">Details reads this layer directly and bypasses flattened explorer state.</p></article></li></ol></li></ol></li><li class="node"><article id="occurrence-03-6"><div class="identity">
+      <code class="name">[no explorer onCollected handler]</code>
+      
+      
+    </div><p class="node-note">Intentional leaf showing the missing direct Layer 1 to Layer 2 collection edge.</p><p class="edge-note">Layer 2 is not directly reconciled at this event on current main.</p></article></li></ol></li><li class="node"><article id="occurrence-03-7"><div class="identity">
+      <code class="name">ws onTaskUpdate</code>
+      
+      <code class="definition">packages/ui/client/composables/client/ws.ts:73</code>
+    </div><p class="node-note">Mutates canonical tasks first and then notifies ExplorerTree of changed ids.</p><p class="edge-note">Incremental results and metadata.</p></article><ol><li class="node repeated"><article><div class="identity">
+      <a class="name repeat-link" href="#occurrence-03-5">[canonical StateManager]</a>
+      
+      <code class="definition">packages/ui/client/composables/client/state.ts:26</code>
+    </div><p class="edge-note">StateManager.updateTasks writes result/meta in place.</p></article></li><li class="node"><article id="occurrence-03-8"><div class="identity">
+      <code class="name">ExplorerTree.resumeRun</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/tree.ts:98</code>
+    </div><p class="node-note">Groups changed ids by file and resumes a collector capped at roughly 10 FPS.</p><p class="edge-note">Changed ids enter the pending-task scheduler.</p></article><ol><li class="node"><article id="occurrence-03-9"><div class="identity">
+      <code class="name">[RAF and microtask scheduler]</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/tree.ts:61</code>
+    </div><p class="node-note">Scheduling boundary between event bursts and projection work.</p><p class="edge-note">Coalesces result bursts before projection.</p></article><ol><li class="node root-reference"><article><div class="identity">
+      <a class="name root-link" href="#root-4-runcollect">runCollect</a>
+      
+      <code class="definition">packages/ui/client/composables/explorer/collector.ts:94</code>
+    </div><p class="node-note">One scheduled flush updates the mirror, recomputes summary, then rebuilds the flat view in queued phases.</p><p class="edge-note">Each allowed tick starts the collector&#39;s ordered microtask phases.</p></article></li></ol></li></ol></li></ol></li><li class="node"><article id="occurrence-03-10"><div class="identity">
+      <code class="name">ws logs and artifacts</code>
+      
+      <code class="definition">packages/ui/client/composables/client/ws.ts:57</code>
+    </div><p class="node-note">Logs mutate canonical tasks directly; artifacts also mark their test pending for explorer refresh.</p><p class="edge-note">Progressive detail payloads.</p></article><ol><li class="node repeated"><article><div class="identity">
+      <a class="name repeat-link" href="#occurrence-03-5">[canonical StateManager]</a>
+      
+      <code class="definition">packages/ui/client/composables/client/state.ts:26</code>
+    </div><p class="edge-note">Detail views can observe canonical logs/annotations/artifacts directly.</p></article></li><li class="node repeated"><article><div class="identity">
+      <a class="name repeat-link" href="#occurrence-03-8">ExplorerTree.resumeRun</a>
+      
+      <code class="definition">packages/ui/client/composables/explorer/tree.ts:98</code>
+    </div><p class="edge-note">Artifact-only activity starts the same collector loop.</p></article></li></ol></li><li class="node"><article id="occurrence-03-11"><div class="identity">
+      <code class="name">ws onFinished</code>
+      
+      <code class="definition">packages/ui/client/composables/client/ws.ts:81</code>
+    </div><p class="node-note">Stops live polling and requests the final full explorer sweep.</p><p class="edge-note">Run completion and final errors.</p></article><ol><li class="node"><article id="occurrence-03-12"><div class="identity">
+      <code class="name">ExplorerTree.endRun</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/tree.ts:108</code>
+    </div><p class="node-note">Pauses RAF and requests end-mode collection over all files.</p><p class="edge-note">Final projection happens before collector code publishes idle.</p></article><ol><li class="node root-reference"><article><div class="identity">
+      <a class="name root-link" href="#root-4-runcollect">runCollect</a>
+      
+      <code class="definition">packages/ui/client/composables/explorer/collector.ts:94</code>
+    </div><p class="node-note">One scheduled flush updates the mirror, recomputes summary, then rebuilds the flat view in queued phases.</p><p class="edge-note">Reached through ExplorerTree.collect as a final queued call.</p></article></li></ol></li></ol></li></ol></li></ol></li></ol>
+      </section><section class="root-section" id="root-4-runcollect">
+        <header class="root-heading"><span>04</span><h2><a href="#root-4-runcollect">runCollect</a></h2></header>
+        <ol class="tree root-tree"><li class="node"><article id="occurrence-04-1"><div class="identity">
+      <code class="name">runCollect</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/collector.ts:94</code>
+    </div><p class="node-note">One scheduled flush updates the mirror, recomputes summary, then rebuilds the flat view in queued phases.</p></article><ol><li class="node"><article id="occurrence-04-2"><div class="identity">
+      <code class="name">[Layer 2 mirror update]</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/collector.ts:153</code>
+    </div><p class="node-note">Copies structural and display fields from idMap tasks into ExplorerTree.nodes/root.</p><p class="edge-note">Updates pending files during a run or every file at the end.</p></article></li><li class="node"><article id="occurrence-04-3"><div class="identity">
+      <code class="name">collectData</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/collector.ts:303</code>
+    </div><p class="node-note">Traverses canonical files/tests and replaces the reactive summary counters.</p><p class="edge-note">Recomputes full dashboard summary from canonical tasks.</p></article><ol><li class="node"><article id="occurrence-04-4"><div class="identity">
+      <code class="name">[Dashboard render]</code>
+      
+      <code class="definition">packages/ui/client/components/Dashboard.vue:7</code>
+    </div><p class="node-note">Reactive summary consumer; independent from the flat explorer list.</p><p class="edge-note">Dashboard components read ExplorerTree.summary directly.</p></article></li></ol></li><li class="node root-reference"><article><div class="identity">
+      <a class="name root-link" href="#root-5-runfilter">runFilter</a>
+      
+      <code class="definition">packages/ui/client/composables/explorer/filter.ts:22</code>
+    </div><p class="node-note">Derives Layer 3 by joining canonical task matching with mirror ordering/expansion.</p><p class="edge-note">doRunFilter/refreshExplorer eventually invokes the shared flat projection.</p></article></li></ol></li></ol>
+      </section><section class="root-section" id="root-5-runfilter">
+        <header class="root-heading"><span>05</span><h2><a href="#root-5-runfilter">runFilter</a></h2></header>
+        <ol class="tree root-tree"><li class="node"><article id="occurrence-05-1"><div class="identity">
+      <code class="name">runFilter</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/filter.ts:22</code>
+    </div><p class="node-note">Derives Layer 3 by joining canonical task matching with mirror ordering/expansion.</p></article><ol><li class="node"><article id="occurrence-05-2"><div class="identity">
+      <code class="name">[Layer 1 plus Layer 2 traversal]</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/filter.ts:34</code>
+    </div><p class="node-note">Uses ExplorerTree structure/view state, but canonical idMap tasks decide search and status matches.</p><p class="edge-note">filterAll/filterNode traverse mirror nodes while matcher looks each id up in StateManager.</p></article></li><li class="node"><article id="occurrence-05-3"><div class="identity">
+      <code class="name">[Layer 3 shallow-ref commit]</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/state.ts:13</code>
+    </div><p class="node-note">uiEntries/uiFiles/filteredFiles are module-level Vue projection refs.</p><p class="edge-note">Replacing uiEntries is the explorer list&#39;s Vue render signal.</p></article><ol><li class="node"><article id="occurrence-05-4"><div class="identity">
+      <code class="name">[virtualized explorer render]</code>
+      
+      <code class="definition">packages/ui/client/components/explorer/Explorer.vue:316</code>
+    </div><p class="node-note">Left pane renders scalar mirror fields while each row can still look up its canonical task.</p><p class="edge-note">RecycleScroller renders visible rows keyed by task id.</p></article></li></ol></li></ol></li></ol>
+      </section><section class="root-section" id="root-6-explorer-query-and-expansion">
+        <header class="root-heading"><span>06</span><h2><a href="#root-6-explorer-query-and-expansion">[explorer query and expansion]</a></h2></header>
+        <ol class="tree root-tree"><li class="node"><article id="occurrence-06-1"><div class="identity">
+      <code class="name">[explorer query and expansion]</code>
+      
+      
+    </div><p class="node-note">User-side commands update the flat projection without passing through runner ingestion.</p></article><ol><li class="node"><article id="occurrence-06-2"><div class="identity">
+      <code class="name">[query controls watcher]</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/search.ts:117</code>
+    </div><p class="node-note">Persists query state and asks ExplorerTree to refilter after Vue&#39;s flush.</p><p class="edge-note">Search, status, project, and sort changes.</p></article><ol><li class="node root-reference"><article><div class="identity">
+      <a class="name root-link" href="#root-5-runfilter">runFilter</a>
+      
+      <code class="definition">packages/ui/client/composables/explorer/filter.ts:22</code>
+    </div><p class="node-note">Derives Layer 3 by joining canonical task matching with mirror ordering/expansion.</p><p class="edge-note">ExplorerTree.filterNodes adds one microtask before shared filtering.</p></article></li></ol></li><li class="node"><article id="occurrence-06-3"><div class="identity">
+      <code class="name">[expand or collapse command]</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/tree.ts:171</code>
+    </div><p class="node-note">Mutates mirror expansion state and either locally edits or fully rebuilds uiEntries.</p><p class="edge-note">Single-row and expand/collapse-all interactions.</p></article><ol><li class="node root-reference"><article><div class="identity">
+      <a class="name root-link" href="#root-5-runfilter">runFilter</a>
+      
+      <code class="definition">packages/ui/client/composables/explorer/filter.ts:22</code>
+    </div><p class="node-note">Derives Layer 3 by joining canonical task matching with mirror ordering/expansion.</p><p class="edge-note">Expand-all uses the full shared projection path.</p></article></li><li class="node"><article id="occurrence-06-4"><div class="identity">
+      <code class="name">[Layer 3 shallow-ref commit]</code>
+      
+      <code class="definition">packages/ui/client/composables/explorer/state.ts:13</code>
+    </div><p class="node-note">uiEntries/uiFiles/filteredFiles are module-level Vue projection refs.</p><p class="edge-note">Single-node and collapse-all commands can replace uiEntries directly.</p></article><ol><li class="node"><article id="occurrence-06-5"><div class="identity">
+      <code class="name">[virtualized explorer render]</code>
+      
+      <code class="definition">packages/ui/client/components/explorer/Explorer.vue:316</code>
+    </div><p class="node-note">Left pane renders scalar mirror fields while each row can still look up its canonical task.</p><p class="edge-note">RecycleScroller renders visible rows keyed by task id.</p></article></li></ol></li></ol></li></ol></li></ol>
+      </section><section class="root-section" id="root-7-selection-and-details">
+        <header class="root-heading"><span>07</span><h2><a href="#root-7-selection-and-details">[selection and details]</a></h2></header>
+        <ol class="tree root-tree"><li class="node"><article id="occurrence-07-1"><div class="identity">
+      <code class="name">[selection and details]</code>
+      
+      
+    </div><p class="node-note">Selection is URL-backed and renders canonical tasks directly rather than consuming uiEntries.</p></article><ol><li class="node"><article id="occurrence-07-2"><div class="identity">
+      <code class="name">clickOnTask</code>
+      
+      <code class="definition">packages/ui/client/composables/navigation.ts:125</code>
+    </div><p class="node-note">Chooses the containing file, optional test, and current/editor view.</p><p class="edge-note">Receives a canonical task from an explorer row action.</p></article><ol><li class="node"><article id="occurrence-07-3"><div class="identity">
+      <code class="name">navigateTo</code>
+      
+      <code class="definition">packages/ui/client/composables/navigation.ts:115</code>
+    </div><p class="node-note">Updates URL refs, resolves the canonical file, and hides dashboard/coverage.</p><p class="edge-note">Writes the normalized selection.</p></article><ol><li class="node"><article id="occurrence-07-4"><div class="identity">
+      <code class="name">[URL hash selection refs]</code>
+      
+      <code class="definition">packages/ui/client/composables/params.ts:11</code>
+    </div><p class="node-note">Reactive durable state for activeFileId, selectedTest, and viewMode.</p><p class="edge-note">Writes file, test, view, line, and column.</p></article><ol><li class="node"><article id="occurrence-07-5"><div class="identity">
+      <code class="name">[canonical task lookup]</code>
+      
+      <code class="definition">packages/ui/client/composables/client/index.ts:75</code>
+    </div><p class="node-note">The details path bypasses ExplorerTree.nodes and uiEntries.</p><p class="edge-note">activeFileId and selectedTest resolve through StateManager.idMap.</p></article><ol><li class="node"><article id="occurrence-07-6"><div class="identity">
+      <code class="name">[FileDetails render]</code>
+      
+      <code class="definition">packages/ui/client/components/FileDetails.vue:100</code>
+    </div><p class="node-note">Switches among report, test report, module graph, editor, and console using canonical data.</p><p class="edge-note">Passes canonical file/test objects into the selected detail view.</p></article><ol><li class="node"><article id="occurrence-07-7"><div class="identity">
+      <code class="name">[detail view boundaries]</code>
+      
+      <code class="definition">packages/ui/client/components/FileDetails.vue:202</code>
+    </div><p class="node-note">Report/editor/console/graph consumers continue to observe the same canonical task objects.</p><p class="edge-note">Stops before deep editor, graph, console, and report rendering internals.</p></article></li></ol></li></ol></li></ol></li></ol></li></ol></li><li class="node repeated"><article><div class="identity">
+      <a class="name repeat-link" href="#occurrence-07-3">navigateTo</a>
+      
+      <code class="definition">packages/ui/client/composables/navigation.ts:115</code>
+    </div><p class="edge-note">Normalizes file/test/view selection.</p></article></li><li class="node repeated"><article><div class="identity">
+      <a class="name repeat-link" href="#occurrence-07-4">[URL hash selection refs]</a>
+      
+      <code class="definition">packages/ui/client/composables/params.ts:11</code>
+    </div><p class="edge-note">Selection also restores directly from the URL on page load.</p></article></li></ol></li></ol>
+      </section></main>
+</body>
+</html>
